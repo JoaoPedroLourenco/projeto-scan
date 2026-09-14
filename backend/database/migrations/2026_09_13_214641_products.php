@@ -24,6 +24,7 @@ return new class extends Migration
             $table->string('barcode')->unique();
             $table->text('description')->nullable();
             $table->decimal('price', 10, 2);
+            $table->integer('min_stock')->default(5);
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
