@@ -35,22 +35,22 @@ class ProductController extends Controller
 
     public function store(ProductRequest $request, CreateProductAction $action): JsonResponse
     {
-         $validated = $request->validated();
+        $validated = $request->validated();
 
-         $product = $action->execute($validated);
+        $product = $action->execute($validated);
 
-         return response()->json([
+        return response()->json([
             'ok' => true,
             'product' => $product
-         ], 201);
+        ], 201);
     }
 
     public function showByBarcode(string $barcode): JsonResponse
     {
         $product = Product::with(['category', 'allergens'])
-                   ->where('barcode', $barcode)
-                   ->where('is_active', true)
-                   ->firstOrFail();
+            ->where('barcode', $barcode)
+            ->where('is_active', true)
+            ->firstOrFail();
 
         return response()->json([
             'ok' => true,
@@ -72,7 +72,7 @@ class ProductController extends Controller
 
         $product->update($validated);
 
-        if ( array_key_exists('allergens', $validated) ) {
+        if (array_key_exists('allergens', $validated)) {
             $product->allergens()->sync($validated['allergens'] ?? []);
         }
 
@@ -95,6 +95,7 @@ class ProductController extends Controller
     public function destroy(Product $product): JsonResponse
     {
         $product->delete();
+
         return response()->json(null, 204);
     }
 }

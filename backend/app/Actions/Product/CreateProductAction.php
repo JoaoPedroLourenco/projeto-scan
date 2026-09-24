@@ -12,11 +12,11 @@ class CreateProductAction
         return DB::transaction(function () use ($data) {
             $product = Product::create([
                 'category_id' => $data['category_id'],
-                'name' => $data['name'],
-                'barcode' => $data['barcode'],
+                'name'        => $data['name'],
+                'barcode'     => $data['barcode'],
                 'description' => $data['description'] ?? null,
-                'price' => $data['price'],
-                'min_stock' =>$data['min_stock'] ?? 5,
+                'price'       => $data['price'],
+                'min_stock'   => $data['min_stock'] ?? 5,
             ]);
 
             if (!empty($data['allergens'])) {
