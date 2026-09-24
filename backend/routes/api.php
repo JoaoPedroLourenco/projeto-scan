@@ -56,7 +56,7 @@ Route::get('products/{product}', [ProductController::class, 'show']);
 |
 */
 
-Route::middleware(['auth:sanctum', 'throttle:user',])->group(function () {
+Route::middleware(['auth:sanctum', 'throttle:user', 'admin'])->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::get('/auth/me', [AuthController::class, 'me']);
 
