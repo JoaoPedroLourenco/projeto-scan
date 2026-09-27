@@ -4,6 +4,7 @@ namespace App\Actions\Auth;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class LoginUserAction
 {
@@ -28,7 +29,10 @@ class LoginUserAction
             default => now()->addDays(14),       
         };
 
-        $token = $user->createToken('api-token', $abilities, $expiresAt)->plainTextToken;
+        $rawTokenName = $data['device_name'] ?? request()->userAgent() ?? 'api-token';
+        $tokenName = Str::limit($rawTokenName, 255, '');
+
+        $token = $user->createToken($tokenName, $abilities, $expiresAt)->plainTextToken;
 
         return [
             'user' => $user,
