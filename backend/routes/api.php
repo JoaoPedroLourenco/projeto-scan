@@ -1,6 +1,7 @@
 <?php
 
-use Illuminate\Http\Request;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,6 +15,42 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+/*
+|--------------------------------------------------------------------------
+| Rotas de teste
+|--------------------------------------------------------------------------
+|
+| Rotas utilizados para fazer teste basicos de requisição
+|
+*/
+
+Route::get('/teste', [UserController::class, 'teste']);
+
+/*
+|--------------------------------------------------------------------------
+| Rotas de Autenticação
+|--------------------------------------------------------------------------
+|
+| Rotas utilizadas para fazer autenticação do usuario.
+| esse grupo de rotas contém registro, login e logout.
+|
+*/
+
+Route::prefix('auth')->group(function() {
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/login', [AuthController::class, 'login']);
+});
+
+/*
+|--------------------------------------------------------------------------
+| Rotas de Protegidas
+|--------------------------------------------------------------------------
+|
+| Rotas que necessitam de de bearer token.
+|
+*/
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/auth/logout', [AuthController::class, 'logout']);
+    Route::get('/auth/me', [AuthController::class, 'me']);
 });
