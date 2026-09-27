@@ -23,7 +23,7 @@ class ProductController extends Controller
 
         if (!$data) {
             return response()->json([
-                'msg' => 'Produto não encontrado externamente',
+                'msg' => 'Produto não encontrado na base local nem externa.',
             ], 404);
         }
 
