@@ -36,7 +36,7 @@ Route::get('/teste', [UserController::class, 'teste']);
 |
 */
 
-Route::prefix('auth')->group(function() {
+Route::prefix('auth')->middleware('throttle:authenticate')->group(function() {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
 });
@@ -50,7 +50,13 @@ Route::prefix('auth')->group(function() {
 |
 */
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', 'throttle:user'])->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::get('/auth/me', [AuthController::class, 'me']);
+
+    Route::get('/auth/sessions', [AuthController::class, 'sessions']);
+    
+    Route::delete('/auth/sessions/{tokenId}', [AuthController::class, 'revokeSession']);
+    
+    Route::delete('/auth/sessions', [AuthController::class, 'revokeOtherSessions']);
 });
