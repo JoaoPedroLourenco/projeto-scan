@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -36,10 +37,15 @@ Route::get('/teste', [UserController::class, 'teste']);
 |
 */
 
-Route::prefix('auth')->group(function() {
+Route::prefix('auth')->middleware('throttle:authenticate')->group(function() {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
 });
+
+
+Route::get('products/barcode/{barcode}', [ProductController::class, 'showByBarcode']);
+Route::get('products', [ProductController::class, 'index']);
+Route::get('products/{product}', [ProductController::class, 'show']);
 
 /*
 |--------------------------------------------------------------------------
@@ -50,7 +56,15 @@ Route::prefix('auth')->group(function() {
 |
 */
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', 'throttle:user', 'admin'])->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::get('/auth/me', [AuthController::class, 'me']);
+
+    Route::get('products/lookup/{barcode}', [ProductController::class, 'lookup']);
+        
+    Route::patch('products/{product}/toggle-status', [ProductController::class, 'toggleStatus']);
+    
+    Route::post('products', [ProductController::class, 'store']);
+    Route::put('products/{product}', [ProductController::class, 'update']);
+    Route::delete('products/{product}', [ProductController::class, 'destroy']);
 });
