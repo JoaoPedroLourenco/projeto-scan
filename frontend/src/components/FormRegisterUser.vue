@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { registerUser } from '../services/authService.js'
 import { useRouter } from 'vue-router'
+import { formatCpf, formatPhone } from '../utils/masks.js'
 
 // variáveis do formulário
 const nomeUser = ref('')
@@ -15,6 +16,15 @@ const confirmarSenha = ref('')
 let mensagemReturn = ref('')
 const loading = ref(false)
 
+// Máscaras para os inputs de telefone e CPF
+function handleCpfInput(event) {
+  cpfUser.value = formatCpf(event.target.value)
+}
+
+function handlePhoneInput(event) {
+  telefoneUser.value = formatPhone(event.target.value)
+}
+
 const router = useRouter()
 
 async function register() {
@@ -25,8 +35,8 @@ async function register() {
     const user = {
       name: nomeUser.value,
       email: emailUser.value,
-      cpf: cpfUser.value,
-      telefone: telefoneUser.value,
+      cpf: cpfUser.value.replace(/\D/g, ''),
+      telefone: telefoneUser.value.replace(/\D/g, ''),
       password: senhaUser.value,
       password_confirmation: confirmarSenha.value,
     }
@@ -59,50 +69,58 @@ async function register() {
   </div>
 
   <form @submit.prevent="register">
-    <label for="name">
-      Nome: *
-      <input v-model="nomeUser" type="text" name="name" id="name" maxlength="100" />
-    </label>
-    <label for="email">
-      E-mail: *
-      <input
-        v-model="emailUser"
-        type="email"
-        name="email"
-        id="email"
-        minlength="10"
-        maxlength="100"
-      />
-    </label>
-    <label for="cpf">
-      CPF: *
-      <input v-model="cpfUser" type="text" name="cpf" id="cpf" minlength="14" maxlength="14" />
-    </label>
-    <label for="telefone">
-      Telefone: *
-      <input
-        v-model="telefoneUser"
-        type="tel"
-        name="telefone"
-        id="telefone"
-        minlength="15"
-        maxlength="15"
-      />
-    </label>
-    <label for="senha">
-      Senha: *
-      <input v-model="senhaUser" type="password" name="senha" id="senha" minlength="8" />
-    </label>
-    <label for="confirmarSenha">
-      Confirmar senha: *
-      <input
-        v-model="confirmarSenha"
-        type="password"
-        name="confirmarSenha"
-        id="confirmarSenha"
-        minlength="8"
-      />
-    </label>
+    <label for="name"> Nome: * </label>
+    <input v-model="nomeUser" type="text" name="name" id="name" maxlength="100" />
+    <label for="email"> </label>
+    E-mail: *
+    <input
+      v-model="emailUser"
+      type="email"
+      name="email"
+      id="email"
+      minlength="10"
+      maxlength="100"
+      placeholder="exemplo@email.com"
+    />
+    <label for="cpf">CPF:</label>
+    <input
+      id="cpf"
+      :value="cpfUser"
+      @input="handleCpfInput"
+      placeholder="000.000.000-00"
+      inputmode="numeric"
+      minlength="14"
+      maxlength="14"
+    />
+
+    <label for="telefone">Telefone:</label>
+    <input
+      id="telefone"
+      :value="telefoneUser"
+      @input="handlePhoneInput"
+      placeholder="(11) 99000-9999"
+      inputmode="numeric"
+      minlength="15"
+      maxlength="15"
+    />
+    <label for="senha"> Senha: * </label>
+    <input
+      v-model="senhaUser"
+      type="password"
+      name="senha"
+      id="senha"
+      minlength="8"
+      placeholder="***********"
+    />
+    <label for="confirmarSenha"> Confirmar senha: * </label>
+    <input
+      v-model="confirmarSenha"
+      type="password"
+      name="confirmarSenha"
+      id="confirmarSenha"
+      minlength="8"
+      placeholder="***********"
+    />
 
     <button type="submit" :disabled="loading">
       {{ loading ? 'Carregando...' : 'Cadastrar' }}
