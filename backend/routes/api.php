@@ -43,28 +43,23 @@ Route::prefix('auth')->middleware('throttle:authenticate')->group(function() {
 });
 
 
-Route::get('products/barcode/{barcode}', [ProductController::class, 'showByBarcode']);
-Route::get('products', [ProductController::class, 'index']);
-Route::get('products/{product}', [ProductController::class, 'show']);
+Route::middleware(['auth:sanctum', 'throttle:user'])->group(function() {
 
-/*
-|--------------------------------------------------------------------------
-| Rotas de Protegidas
-|--------------------------------------------------------------------------
-|
-| Rotas que necessitam de de bearer token.
-|
-*/
+    Route::prefix('auth')->group(function() {
+        Route::post('/logout', [AuthController::class, 'logout']);
+        Route::get('/me', [AuthController::class, 'me']);
+    });
 
-Route::middleware(['auth:sanctum', 'throttle:user', 'admin'])->group(function () {
-    Route::post('/auth/logout', [AuthController::class, 'logout']);
-    Route::get('/auth/me', [AuthController::class, 'me']);
+    Route::prefix('products')->group(function() {
+    Route::get('/', [ProductController::class, 'index']);
+    Route::get('{product}', [ProductController::class, 'show']);
 
-    Route::get('products/lookup/{barcode}', [ProductController::class, 'lookup']);
-        
-    Route::patch('products/{product}/toggle-status', [ProductController::class, 'toggleStatus']);
-    
-    Route::post('products', [ProductController::class, 'store']);
-    Route::put('products/{product}', [ProductController::class, 'update']);
-    Route::delete('products/{product}', [ProductController::class, 'destroy']);
+    Route::middleware('admin')->group(function() {
+        Route::get('lookup/{barcode}', [ProductController::class, 'lookup']);
+        Route::patch('{product}/toggle-status', [ProductController::class, 'toggleStatus']);
+        Route::post('/', [ProductController::class, 'store']);
+        Route::put('{product}', [ProductController::class, 'update']);
+        Route::delete('{product}', [ProductController::class, 'destroy']);
+        });
+    });
 });
