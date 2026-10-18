@@ -46,19 +46,6 @@ class ProductController extends Controller
         ], 201);
     }
 
-    public function showByBarcode(string $barcode): JsonResponse
-    {
-        $product = Product::with(['category', 'allergens'])
-            ->where('barcode', $barcode)
-            ->where('is_active', true)
-            ->firstOrFail();
-
-        return response()->json([
-            'ok' => true,
-            'product' => $product
-        ]);
-    }
-
     public function show(Product $product): JsonResponse
     {
         return response()->json([
