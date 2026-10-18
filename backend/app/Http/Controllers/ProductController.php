@@ -13,7 +13,6 @@ class ProductController extends Controller
 {
     public function index(ProductFilter $filters): JsonResponse
     {
-        //$products = Product::with(['category', 'allergens'])->get();
         $products = Product::filter($filters)->with(['category', 'allergens'])->paginate();
 
         return response()->json($products);
