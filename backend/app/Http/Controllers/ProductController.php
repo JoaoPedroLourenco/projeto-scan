@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Product\CreateProductAction;
+use App\Filters\ProductFilter;
 use App\Http\Requests\ProductRequest;
 use App\Models\Product;
 use App\Services\BarcodeLookupService;
@@ -10,9 +11,10 @@ use Illuminate\Http\JsonResponse;
 
 class ProductController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(ProductFilter $filters): JsonResponse
     {
-        $products = Product::with(['category', 'allergens'])->get();
+        //$products = Product::with(['category', 'allergens'])->get();
+        $products = Product::filter($filters)->with(['category', 'allergens'])->paginate();
 
         return response()->json($products);
     }
