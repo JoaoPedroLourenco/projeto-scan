@@ -22,7 +22,18 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        RateLimiter::for('user', function (Request $request) {
+
+        $customResponse = function (Request $request, array $headers) {
+            $retryAfter = $headers['Retry-After'] ?? $headers['retry-After'] ?? $headers['retry-after'] ?? 60;
+
+            return response()->json([
+                'ok'                  => false,
+                'msg'                 => 'Você excedeu o limite de requisições. Por favor, aguarde antes de tentar novamente.',
+                'retry_after_seconds' => (int) $retryAfter,
+            ], 429, $headers);
+        };
+
+        RateLimiter::for('user', function (Request $request) use ($customResponse) {
             $user = $request->user();
 
             // Define limite de requisições por minuto por cargo
@@ -35,24 +46,21 @@ class AppServiceProvider extends ServiceProvider
 
             return Limit::perMinute($maxAttempts)
                 ->by($user?->id ?: $request->ip())
-                ->response(function (Request $request, array $headers) {
-                    $retryAfter = $headers['Retry-After'] ?? $headers['retry-After'] ?? 60;
-
-                    return response()->json([
-                        'msg' => 'Você excedeu o limite de requisições. Por favor, aguarde antes de tentar novamente.',
-                        'retry_after_seconds' => (int) $retryAfter,
-                    ], 429);
-                });
+                ->response($customResponse);
         });
 
-        RateLimiter::for('authenticate', function (Request $request) {
+        RateLimiter::for('authenticate', function (Request $request) use ($customResponse) {
             $email = (string) $request->input('email');
             $ip = $request->ip();
 
             return [
-                Limit::perMinute(10)->by($ip),
+                Limit::perMinute(10)
+                       ->by($ip)
+                       ->response($customResponse),
 
-                Limit::perMinute(5)->by($email ? $email . '|' . $ip : $ip),
+                Limit::perMinute(5)
+                       ->by($email ? $email . '|' . $ip : $ip)
+                       ->response($customResponse),
             ];
         });
     }
