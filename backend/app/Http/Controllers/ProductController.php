@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Product\CreateProductAction;
+use App\Actions\Product\ToggleProductAction;
+use App\Actions\Product\UpdateProductAction;
+use App\Actions\Product\DeleteProductAction;
 use App\Filters\ProductFilter;
 use App\Http\Requests\ProductRequest;
 use App\Models\Product;
@@ -50,19 +53,15 @@ class ProductController extends Controller
     {
         return response()->json([
             'ok' => true,
-            'product' => $product->load(['category', 'allergens', 'stockBatches'])
+            'product' => $product->load(['category', 'allergens',])
         ]);
     }
 
-    public function update(ProductRequest $request, Product $product): JsonResponse
+    public function update(ProductRequest $request, Product $product, UpdateProductAction $action): JsonResponse
     {
         $validated = $request->validated();
 
-        $product->update($validated);
-
-        if (array_key_exists('allergens', $validated)) {
-            $product->allergens()->sync($validated['allergens'] ?? []);
-        }
+        $product = $action->execute($product, $validated);
 
         return response()->json([
             'ok' => true,
@@ -70,20 +69,23 @@ class ProductController extends Controller
         ]);
     }
 
-    public function toggleStatus(Product $product): JsonResponse
+    public function toggleStatus(Product $product, ToggleProductAction $action): JsonResponse
     {
-        $product->update(['is_active' => !$product->is_active]);
+        $product = $action->execute($product);
 
         return response()->json([
             'ok' => true,
-            'is_active' => $product->is_active
+            'product' => $product
         ]);
     }
 
-    public function destroy(Product $product): JsonResponse
+    public function destroy(Product $product, DeleteProductAction $action): JsonResponse
     {
-        $product->delete();
+        $product = $action->execute($product);
 
-        return response()->json(null, 204);
+        return response()->json([
+            'ok' => true,
+            'msg' => 'Produto deletado'
+        ]);
     }
 }
