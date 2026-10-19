@@ -7,6 +7,10 @@ const router = createRouter({
   history: createWebHistory(),
   routes: [
     {
+      path: '/',
+      redirect: '/login',
+    },
+    {
       path: '/register',
       component: RegisterPageView,
       meta: { guestOnly: true },
@@ -15,6 +19,11 @@ const router = createRouter({
       path: '/home',
       component: HomePageView,
       meta: { requiresAuth: true },
+    },
+    {
+      path: '/login',
+      component: LoginPageView,
+      meta: { guestOnly: true },
     },
   ],
 })

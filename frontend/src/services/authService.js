@@ -7,7 +7,11 @@ export function registerUser(userInfo) {
 export async function getCurrentUser() {
   const response = await api.get('/auth/me')
 
-  return response.data.user ?? respose.data
+  return response.data.user ?? response.data
+}
+
+export function userLogin(userInfo) {
+  return api.post('/auth/login', userInfo)
 }
 
 export async function logout() {
