@@ -1,16 +1,29 @@
 <script setup>
 import { logout } from '../services/authService.js'
 import { useRouter } from 'vue-router'
+import { ref } from 'vue'
 
 const router = useRouter()
 
-async function logoutUser() {
-  await logout()
+const loading = ref(false)
 
-  router.push('/register')
+async function logoutUser() {
+  loading.value = true
+
+  try {
+    await logout()
+
+    router.push('/')
+  } catch (error) {
+    console.error(error.response?.data)
+  } finally {
+    loading.value = false
+  }
 }
 </script>
 
 <template>
-  <button @click="logoutUser">Sair</button>
+  <button type="button" @click="logoutUser">
+    {{ loading ? 'Saindo...' : 'Sair' }}
+  </button>
 </template>

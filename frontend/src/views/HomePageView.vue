@@ -1,8 +1,5 @@
 <script setup>
 import LogoutButton from '@/components/LogoutButton.vue'
-import { getCurrentUser } from '../services/authService.js'
-
-console.log(getCurrentUser)
 </script>
 
 <template>
