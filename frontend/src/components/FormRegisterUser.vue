@@ -126,4 +126,6 @@ async function register() {
       {{ loading ? 'Carregando...' : 'Cadastrar' }}
     </button>
   </form>
+
+  <RouterLink to="/login">Login</RouterLink>
 </template>
