@@ -9,6 +9,8 @@ class QueryFilter {
     public Request $request;
     public Builder $builder;
 
+    protected array $allowedFilters = [];
+
     public function __construct(Request $request) {
         $this->request = $request;
     }
@@ -17,7 +19,7 @@ class QueryFilter {
         $this->builder = $builder;
 
         foreach ($this->request->all() as $name => $value) {
-            if ($this->isValidParam($value) && method_exists($this, $name)) {
+            if (in_array($name, $this->allowedFilters, true) && $this->isValidParam($value) && method_exists($this, $name)) {
                 $this->$name($value);
             }
         }

@@ -48,18 +48,21 @@ Route::middleware(['auth:sanctum', 'throttle:user'])->group(function() {
     Route::prefix('auth')->group(function() {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('/me', [AuthController::class, 'me']);
+        Route::get('/sessions', [AuthController::class, 'sessions']);
++       Route::delete('/sessions/{tokenId}', [AuthController::class, 'revokeSession']);
++       Route::delete('/sessions', [AuthController::class, 'revokeOtherSessions']);
     });
 
     Route::prefix('products')->group(function() {
     Route::get('/', [ProductController::class, 'index']);
-    Route::get('{product}', [ProductController::class, 'show']);
+    Route::get('{product}', [ProductController::class, 'show'])->whereNumber('product');
 
     Route::middleware('admin')->group(function() {
         Route::get('lookup/{barcode}', [ProductController::class, 'lookup']);
-        Route::patch('{product}/toggle-status', [ProductController::class, 'toggleStatus']);
+        Route::patch('{product}/toggle-status', [ProductController::class, 'toggleStatus'])->whereNumber('product');
         Route::post('/', [ProductController::class, 'store']);
-        Route::put('{product}', [ProductController::class, 'update']);
-        Route::delete('{product}', [ProductController::class, 'destroy']);
+        Route::put('{product}', [ProductController::class, 'update'])->whereNumber('product');
+        Route::delete('{product}', [ProductController::class, 'destroy'])->whereNumber('product');
         });
     });
 });
