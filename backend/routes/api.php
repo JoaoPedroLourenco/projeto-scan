@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -41,22 +42,24 @@ Route::prefix('auth')->middleware('throttle:authenticate')->group(function() {
     Route::post('/login', [AuthController::class, 'login']);
 });
 
-/*
-|--------------------------------------------------------------------------
-| Rotas de Protegidas
-|--------------------------------------------------------------------------
-|
-| Rotas que necessitam de de bearer token.
-|
-*/
 
-Route::middleware(['auth:sanctum', 'throttle:user'])->group(function () {
-    Route::post('/auth/logout', [AuthController::class, 'logout']);
-    Route::get('/auth/me', [AuthController::class, 'me']);
+Route::middleware(['auth:sanctum', 'throttle:user'])->group(function() {
 
-    Route::get('/auth/sessions', [AuthController::class, 'sessions']);
-    
-    Route::delete('/auth/sessions/{tokenId}', [AuthController::class, 'revokeSession']);
-    
-    Route::delete('/auth/sessions', [AuthController::class, 'revokeOtherSessions']);
+    Route::prefix('auth')->group(function() {
+        Route::post('/logout', [AuthController::class, 'logout']);
+        Route::get('/me', [AuthController::class, 'me']);
+    });
+
+    Route::prefix('products')->group(function() {
+    Route::get('/', [ProductController::class, 'index']);
+    Route::get('{product}', [ProductController::class, 'show']);
+
+    Route::middleware('admin')->group(function() {
+        Route::get('lookup/{barcode}', [ProductController::class, 'lookup']);
+        Route::patch('{product}/toggle-status', [ProductController::class, 'toggleStatus']);
+        Route::post('/', [ProductController::class, 'store']);
+        Route::put('{product}', [ProductController::class, 'update']);
+        Route::delete('{product}', [ProductController::class, 'destroy']);
+        });
+    });
 });
