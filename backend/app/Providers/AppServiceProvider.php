@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Enums\UserRole;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -38,9 +39,10 @@ class AppServiceProvider extends ServiceProvider
 
             // Define limite de requisições por minuto por cargo
             $maxAttempts = match ($user?->role) {
-                'admin'    => 120, 
-                'operador' => 60,  
-                'cliente'   => 30,  
+                UserRole::admin    => 120, 
+                UserRole::manager    => 120, 
+                UserRole::operator => 60,  
+                UserRole::customer   => 30,  
                 default    => 10,  
             };
 
