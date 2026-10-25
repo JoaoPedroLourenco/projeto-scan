@@ -2,6 +2,7 @@
 
 namespace App\Actions\Auth;
 
+use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -16,17 +17,13 @@ class RegisterUserAction
                 'email' => $data['email'],
                 'cpf' => $data['cpf'] ?? null,
                 'phone' => $data['phone'] ?? null,
-                'role' => 'cliente',
+                'role' => UserRole::customer,
                 'password' => $data['password'],
             ]);
 
             $abilities = ['*'];
 
-            $expiresAt = match ($user->role) {
-                'admin' => now()->addHours(8),    
-                'operador' => now()->addHours(12),   
-                default => now()->addDays(14),       
-            };
+            $expiresAt = $user->role->expiresAt();
 
             $rawTokenName = $data['device_name'] ?? request()->userAgent() ?? 'api-token';
             $tokenName = Str::limit($rawTokenName, 255, '');
