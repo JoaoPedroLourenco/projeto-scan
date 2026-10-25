@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\Auth\RegisterUserAction;
 use App\Actions\Auth\LoginUserAction;
+use App\Actions\Auth\LogoutUserAction;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use Illuminate\Http\JsonResponse;
@@ -11,7 +12,8 @@ use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
-    function register(RegisterRequest $request, RegisterUserAction $action) {
+    function register(RegisterRequest $request, RegisterUserAction $action): JsonResponse
+    {
         $result = $action->execute($request->validated());
 
         return response()->json([
@@ -21,7 +23,8 @@ class AuthController extends Controller
         ], 201);
     }
 
-    public function login(LoginRequest $request, LoginUserAction $action) {
+    public function login(LoginRequest $request, LoginUserAction $action): JsonResponse
+    {
         $result = $action->execute($request->validated());
 
         if (! $result) {
@@ -38,8 +41,12 @@ class AuthController extends Controller
         ]);
     }
 
-    function logout(Request $request) {
-        $request->user()->currentAccessToken()->delete();
+    function logout(Request $request, LogoutUserAction $action): JsonResponse
+    {
+        
+        $user = $request->user();
+
+        $action->execute($user);
 
         return response()->json([
             'ok' => true,
