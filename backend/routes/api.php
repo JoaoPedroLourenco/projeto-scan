@@ -48,13 +48,17 @@ Route::middleware(['auth:sanctum', 'throttle:user'])->group(function() {
     Route::prefix('auth')->group(function() {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('/me', [AuthController::class, 'me']);
+        Route::put('/me', [AuthController::class, 'update']);
+        Route::get('/sessions', [AuthController::class, 'sessions']);
+        Route::delete('/sessions/{tokenId}', [AuthController::class, 'revokeSession']);
+        Route::delete('/sessions', [AuthController::class, 'revokeOtherSessions']);
     });
 
     Route::prefix('products')->group(function() {
     Route::get('/', [ProductController::class, 'index']);
     Route::get('{product}', [ProductController::class, 'show']);
 
-    Route::middleware('admin')->group(function() {
+    Route::middleware('role:admin,manager')->group(function() {
         Route::get('lookup/{barcode}', [ProductController::class, 'lookup']);
         Route::patch('{product}/toggle-status', [ProductController::class, 'toggleStatus']);
         Route::post('/', [ProductController::class, 'store']);
