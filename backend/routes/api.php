@@ -56,14 +56,14 @@ Route::middleware(['auth:sanctum', 'throttle:user'])->group(function() {
 
     Route::prefix('products')->group(function() {
     Route::get('/', [ProductController::class, 'index']);
-    Route::get('{product}', [ProductController::class, 'show']);
+    Route::get('{product}', [ProductController::class, 'show'])->whereNumber('product');
 
     Route::middleware('role:admin,manager')->group(function() {
         Route::get('lookup/{barcode}', [ProductController::class, 'lookup']);
-        Route::patch('{product}/toggle-status', [ProductController::class, 'toggleStatus']);
+        Route::patch('{product}/toggle-status', [ProductController::class, 'toggleStatus'])->whereNumber('product');
         Route::post('/', [ProductController::class, 'store']);
-        Route::put('{product}', [ProductController::class, 'update']);
-        Route::delete('{product}', [ProductController::class, 'destroy']);
+        Route::put('{product}', [ProductController::class, 'update'])->whereNumber('product');
+        Route::delete('{product}', [ProductController::class, 'destroy'])->whereNumber('product');
         });
     });
 });

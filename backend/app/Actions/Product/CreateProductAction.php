@@ -17,6 +17,7 @@ class CreateProductAction
                 'description' => $data['description'] ?? null,
                 'price'       => $data['price'],
                 'min_stock'   => $data['min_stock'] ?? 5,
+                'is_active'   => $data['is_active'] ?? true,
             ]);
 
             if (!empty($data['allergens'])) {
