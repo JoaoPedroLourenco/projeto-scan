@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import LoginPageView from '@/views/LoginPageView.vue'
 import RegisterPageView from '@/views/RegisterPageView.vue'
 import HomePageView from '@/views/HomePageView.vue'
+import CreateProductView from '@/views/CreateProductView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -24,6 +25,11 @@ const router = createRouter({
       path: '/login',
       component: LoginPageView,
       meta: { guestOnly: true },
+    },
+    {
+      path: '/produtos/registro',
+      component: CreateProductView,
+      meta: { requiresAuth: true },
     },
   ],
 })
