@@ -1,8 +1,8 @@
 <?php
 
-use App\Http\Controllers\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\StockController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -15,17 +15,6 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
-
-/*
-|--------------------------------------------------------------------------
-| Rotas de teste
-|--------------------------------------------------------------------------
-|
-| Rotas utilizados para fazer teste basicos de requisição
-|
-*/
-
-Route::get('/teste', [UserController::class, 'teste']);
 
 /*
 |--------------------------------------------------------------------------
@@ -64,6 +53,14 @@ Route::middleware(['auth:sanctum', 'throttle:user'])->group(function() {
         Route::post('/', [ProductController::class, 'store']);
         Route::put('{product}', [ProductController::class, 'update']);
         Route::delete('{product}', [ProductController::class, 'destroy']);
+        });
+    });
+
+    Route::middleware('role:admin,manager,operator')->group(function(){
+        Route::prefix('stock')->group(function() {
+            Route::get('/', [StockController::class, 'index']);
+            Route::post('/entry', [StockController::class, 'entry']);
+            Route::post('/exit', [StockController::class, 'exit']);
         });
     });
 });
