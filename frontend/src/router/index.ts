@@ -3,6 +3,7 @@ import LoginPageView from '@/views/LoginPageView.vue'
 import RegisterPageView from '@/views/RegisterPageView.vue'
 import HomePageView from '@/views/HomePageView.vue'
 import CreateProductView from '@/views/CreateProductView.vue'
+import ProductsListView from '@/views/ProductsListView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -25,6 +26,11 @@ const router = createRouter({
       path: '/login',
       component: LoginPageView,
       meta: { guestOnly: true },
+    },
+    {
+      path: '/produtos',
+      component: ProductsListView,
+      meta: { requiresAuth: true },
     },
     {
       path: '/produtos/registro',

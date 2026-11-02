@@ -9,3 +9,14 @@ export async function createProducts(productInfo) {
     throw error
   }
 }
+
+export async function showAllProducts() {
+  try {
+    const response = await api.get('/products')
+
+    return response.data
+  } catch (error) {
+    console.error('Erro ao listar produtos:', error.response?.data ?? error.message)
+    throw error
+  }
+}
