@@ -23,7 +23,7 @@ async function logoutUser() {
 </script>
 
 <template>
-  <button type="button" @click="logoutUser">
+  <button type="button" @click="logoutUser" class="cursor-pointer">
     {{ loading ? 'Saindo...' : 'Sair' }}
   </button>
 </template>
