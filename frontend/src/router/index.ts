@@ -4,6 +4,7 @@ import RegisterPageView from '@/views/RegisterPageView.vue'
 import HomePageView from '@/views/HomePageView.vue'
 import CreateProductView from '@/views/CreateProductView.vue'
 import ProductsListView from '@/views/ProductsListView.vue'
+import EditProductView from '@/views/EditProductView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -35,6 +36,11 @@ const router = createRouter({
     {
       path: '/produtos/registro',
       component: CreateProductView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/produtos/editar/:id',
+      component: EditProductView,
       meta: { requiresAuth: true },
     },
   ],

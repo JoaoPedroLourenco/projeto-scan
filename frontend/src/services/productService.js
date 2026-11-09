@@ -31,3 +31,36 @@ export async function showAllProducts() {
     throw error
   }
 }
+
+export async function searchProductById(productId) {
+  try {
+    const response = await api.get(`/products/${productId}`)
+
+    return response.data
+  } catch (error) {
+    console.error('Erro ao encontrar produto', error.response?.data ?? error.message)
+    throw error
+  }
+}
+
+export async function updateProduct(productId, productInfo) {
+  try {
+    const response = await api.put(`/products/${productId}`, productInfo)
+
+    return response.data
+  } catch (error) {
+    console.error('Erro ao editar produto', error.response?.data ?? error.message)
+    throw error
+  }
+}
+
+export async function deleteProduct(productId) {
+  try {
+    const response = await api.delete(`/products/${productId}`)
+
+    return response.data
+  } catch (error) {
+    console.error('Erro ao excluir produto', error.response?.data ?? error.message)
+    throw error
+  }
+}

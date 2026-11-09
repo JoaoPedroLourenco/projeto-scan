@@ -1,14 +1,11 @@
 <script setup>
 import { onMounted, ref } from 'vue'
-import { deleteProduct, showAllProducts } from '../../services/productService.js'
+import { showAllProducts } from '../../services/productService.js'
 import { useRouter } from 'vue-router'
-import DeleteConfirmation from './DeleteConfirmation.vue'
 
 const produtos = ref([])
 const loading = ref(false)
 const erro = ref('')
-const produtoSelecionado = ref(null)
-const excluindo = ref(false)
 
 const router = useRouter()
 
@@ -29,24 +26,6 @@ async function loadProducts() {
 
 function goToEditPage(produtoId) {
   router.push(`/produtos/editar/${produtoId}`)
-}
-
-async function confirmDelete() {
-  if (!produtoSelecionado.value || excluindo.value) return
-
-  excluindo.value = true
-  erro.value = ''
-
-  try {
-    await deleteProduct(produtoSelecionado.value.id)
-    produtos.value = produtos.value.filter((produto) => produto.id !== produtoSelecionado.value.id)
-    produtoSelecionado.value = null
-  } catch (error) {
-    erro.value = error.response?.data?.message ?? 'Não foi possível excluir o produto.'
-    console.error(error.response ?? error)
-  } finally {
-    excluindo.value = false
-  }
 }
 
 onMounted(() => {
@@ -73,6 +52,7 @@ onMounted(() => {
           <th>Descrição</th>
           <th>Estoque mínimo</th>
           <th>Status</th>
+          <th>Ações</th>
         </tr>
       </thead>
 
@@ -86,9 +66,16 @@ onMounted(() => {
           <td>{{ produto.description }}</td>
           <td>{{ produto.min_stock }}</td>
           <td>{{ produto.is_active ? 'Ativo' : 'Inativo' }}</td>
+          <td>
+            <div>
+              <button @click="goToEditPage(produto.id)">Editar</button>
+            </div>
+          </td>
         </tr>
       </tbody>
     </table>
+
+    <p v-if="erro && !loading">{{ erro }}</p>
   </section>
 </template>
 
