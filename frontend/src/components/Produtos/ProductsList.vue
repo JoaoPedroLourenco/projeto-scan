@@ -1,11 +1,14 @@
 <script setup>
 import { onMounted, ref } from 'vue'
-import { showAllProducts } from '../../services/productService.js'
+import { deleteProduct, showAllProducts } from '../../services/productService.js'
 import { useRouter } from 'vue-router'
+import DeleteConfirmation from './DeleteConfirmation.vue'
 
 const produtos = ref([])
 const loading = ref(false)
 const erro = ref('')
+const produtoSelecionado = ref(null)
+const excluindo = ref(false)
 
 const router = useRouter()
 
@@ -26,6 +29,24 @@ async function loadProducts() {
 
 function goToEditPage(produtoId) {
   router.push(`/produtos/editar/${produtoId}`)
+}
+
+async function confirmDelete() {
+  if (!produtoSelecionado.value || excluindo.value) return
+
+  excluindo.value = true
+  erro.value = ''
+
+  try {
+    await deleteProduct(produtoSelecionado.value.id)
+    produtos.value = produtos.value.filter((produto) => produto.id !== produtoSelecionado.value.id)
+    produtoSelecionado.value = null
+  } catch (error) {
+    erro.value = error.response?.data?.message ?? 'Não foi possível excluir o produto.'
+    console.error(error.response ?? error)
+  } finally {
+    excluindo.value = false
+  }
 }
 
 onMounted(() => {
@@ -69,10 +90,19 @@ onMounted(() => {
           <td>
             <div>
               <button @click="goToEditPage(produto.id)">Editar</button>
+              <button type="button" @click="produtoSelecionado = produto">Excluir</button>
             </div>
           </td>
         </tr>
       </tbody>
+
+      <DeleteConfirmation
+        v-if="produtoSelecionado"
+        :product-name="produtoSelecionado.name"
+        :loading="excluindo"
+        @confirm="confirmDelete"
+        @cancel="produtoSelecionado = null"
+      />
     </table>
 
     <p v-if="erro && !loading">{{ erro }}</p>
