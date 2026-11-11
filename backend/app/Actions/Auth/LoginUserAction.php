@@ -2,6 +2,7 @@
 
 namespace App\Actions\Auth;
 
+use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -13,6 +14,7 @@ class LoginUserAction
         $credentials = [
             'email' => $data['email'],
             'password' => $data['password'],
+            'is_active' => true,
         ];
 
         if ( !Auth::attempt($credentials) ) {
@@ -23,11 +25,8 @@ class LoginUserAction
         $user = Auth::user();
 
         $abilities = ['*'];
-        $expiresAt = match ($user->role) {
-            'admin' => now()->addHours(8),    
-            'operador' => now()->addHours(12),   
-            default => now()->addDays(14),       
-        };
+
+        $expiresAt = $user->role->expiresAt();
 
         $rawTokenName = $data['device_name'] ?? request()->userAgent() ?? 'api-token';
         $tokenName = Str::limit($rawTokenName, 255, '');
