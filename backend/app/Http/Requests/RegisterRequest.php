@@ -18,7 +18,7 @@ class RegisterRequest extends FormRequest
             'email' => strtolower(trim((string) $this->email)),
             'name' => trim((string) $this->name),
             'cpf' => $this->cpf ? preg_replace('/\D/', '', (string) $this->cpf) : null,
-            'phone' => $this->telefone ? preg_replace('/\D/', '', (string) $this->telefone) : null,
+            'phone' => $this->phone ? preg_replace('/\D/', '', (string) $this->phone) : null,
         ]);
     }
 
@@ -29,6 +29,7 @@ class RegisterRequest extends FormRequest
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'cpf' => ['nullable', 'string', 'digits:11', 'unique:users,cpf'],
             'phone' => ['nullable', 'string', 'digits:11'],
+            'device_name' => ['nullable', 'string', 'max:255'],
             'password' => [
                 'required',
                 'confirmed',
@@ -48,6 +49,9 @@ class RegisterRequest extends FormRequest
             'phone.digits' => 'O telefone deve conter 11 dígitos com DDD.',
             'password.required' => 'A senha é obrigatória.',
             'password.confirmed' => 'As senhas digitadas não coincidem.',
+            'password.min'       => 'A senha deve ter no mínimo 8 caracteres.',
+            'password.letters'   => 'A senha deve conter ao menos uma letra.',
+            'password.symbols'   => 'A senha deve conter ao menos um símbolo.',
         ];
     }
 }
