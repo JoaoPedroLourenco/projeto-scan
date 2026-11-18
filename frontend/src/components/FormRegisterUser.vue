@@ -52,7 +52,10 @@ async function register() {
     router.push('/home')
   } catch (error) {
     // retorna a mensagem de erro diretamente da API (temporário)
-    mensagemReturn.value = error.response?.data.message
+    mensagemReturn.value =
+      error.response?.data?.message ||
+      error.response?.data?.message ||
+      'Erro ao conectar com o servidor.'
     console.log(error.response?.status)
     console.log(error.response?.data)
   } finally {

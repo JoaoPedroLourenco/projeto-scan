@@ -31,7 +31,8 @@ async function login() {
 
     router.push('/home')
   } catch (error) {
-    mensagemReturn.value = error.response?.data.msg || error.response?.data.message
+    mensagemReturn.value =
+      error.response?.data?.msg || error.response?.data?.msg || 'Erro ao realizar o cadastro.'
     console.log(error.response)
   } finally {
     loading.value = false
