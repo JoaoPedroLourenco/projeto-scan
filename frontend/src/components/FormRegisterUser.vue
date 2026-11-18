@@ -100,8 +100,7 @@ async function register() {
       @input="handlePhoneInput"
       placeholder="(11) 99000-9999"
       inputmode="numeric"
-      minlength="15"
-      maxlength="15"
+      minlength="14"
     />
     <label for="senha"> Senha: * </label>
     <input
