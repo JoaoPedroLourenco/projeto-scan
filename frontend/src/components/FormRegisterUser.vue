@@ -36,7 +36,7 @@ async function register() {
       name: nomeUser.value,
       email: emailUser.value,
       cpf: cpfUser.value.replace(/\D/g, ''),
-      telefone: telefoneUser.value.replace(/\D/g, ''),
+      phone: telefoneUser.value.replace(/\D/g, ''),
       password: senhaUser.value,
       password_confirmation: confirmarSenha.value,
     }
