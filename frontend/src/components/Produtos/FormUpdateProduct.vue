@@ -1,95 +1,109 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { searchProductById, updateProduct } from '../../services/productService.js'
-
-const id_categoria = ref('')
-const name_product = ref('')
-const barcode = ref('')
-const descricao = ref('')
-const preco = ref(0)
-const min_stock = ref(0)
+import ProductDetailsCard from './ProductDetailsCard.vue'
+import ProductPricingStockCards from './ProductPricingStockCards.vue'
+import PageContainer from '../ui/PageContainer.vue'
 
 const route = useRoute()
 const router = useRouter()
-const loading = ref(false)
+const loading = ref(true)
 const saving = ref(false)
-const productLoaded = ref(false)
+const error = ref('')
+const form = reactive({
+  category_id: '', name: '', brand: '', description: '', barcode: '',
+  price: 0, cost: 0, margin: 0, min_stock: 5, initial_stock: 0,
+  batch_code: '', expiration: '', is_active: true,
+})
 
-async function fetchProductInfo() {
-  loading.value = true
+const suggestedPrice = computed(() =>
+  form.cost ? form.cost * (1 + form.margin / 100) : Number(form.price),
+)
+const profit = computed(() => suggestedPrice.value - Number(form.cost))
 
+async function loadProduct() {
   try {
     const response = await searchProductById(Number(route.params.id))
     const product = response?.product ?? response
-
-    if (!product) return
-
-    id_categoria.value = product.category_id ?? ''
-    name_product.value = product.name ?? ''
-    barcode.value = product.barcode ?? ''
-    descricao.value = product.description ?? ''
-    preco.value = product.price ?? 0
-    min_stock.value = product.min_stock ?? 0
-
-    productLoaded.value = true
-  } catch (error) {
-    console.error('Erro ao carregar produto:', error.response?.data ?? error.message)
+    Object.assign(form, {
+      category_id: product.category_id,
+      name: product.name,
+      brand: product.brand || '',
+      description: product.description || '',
+      barcode: product.barcode || '',
+      price: Number(product.price || 0),
+      min_stock: Number(product.min_stock || 5),
+      is_active: product.is_active,
+    })
+  } catch (cause) {
+    error.value = cause.response?.data?.message || 'Não foi possível carregar o produto.'
   } finally {
     loading.value = false
   }
 }
 
-async function updateProductInfo() {
+async function saveProduct() {
   saving.value = true
+  error.value = ''
+  const productInfo = {
+    category_id: Number(form.category_id),
+    name: form.name,
+    barcode: form.barcode,
+    description: form.description,
+    price: Number(suggestedPrice.value),
+    min_stock: Number(form.min_stock),
+  }
 
   try {
-    const productInfo = {
-      category_id: Number(id_categoria.value),
-      name: name_product.value,
-      barcode: barcode.value,
-      description: descricao.value,
-      price: preco.value,
-      min_stock: min_stock.value,
-    }
-
-    await updateProduct(route.params.id, productInfo)
+    await updateProduct(Number(route.params.id), productInfo)
     router.push('/produtos')
-  } catch (error) {
-    console.error('Erro ao atualizar produto:', error.response?.data ?? error.message)
+  } catch (cause) {
+    error.value = cause.response?.data?.message || 'Não foi possível salvar o produto.'
   } finally {
     saving.value = false
   }
 }
 
-onMounted(fetchProductInfo)
+onMounted(loadProduct)
 </script>
 
 <template>
-  <p v-if="loading">Carregando...</p>
-  <p v-else-if="!productLoaded">Não foi possível carregar o produto.</p>
-
-  <form v-else @submit.prevent="updateProductInfo" class="w-2/4 flex flex-col">
-    <label for="id_categoria">Categoria</label>
-    <input type="text" id="id_categoria" name="id_categoria" v-model="id_categoria" />
-
-    <label for="name_product">Nome do produto</label>
-    <input type="text" id="name_product" name="name_product" v-model="name_product" />
-
-    <label for="barcode">Código de Barras (EAN/GTIN/UPC)</label>
-    <input type="text" id="barcode" name="barcode" v-model="barcode" />
-
-    <label for="descricao">Descrição</label>
-    <input type="text" id="descricao" name="descricao" v-model="descricao" />
-
-    <label for="preco">Preço</label>
-    <input type="number" id="preco" name="preco" v-model.number="preco" />
-
-    <label for="min_stock">Estoque Mínimo</label>
-    <input type="number" id="min_stock" name="min_stock" v-model.number="min_stock" />
-
-    <button type="submit" :disabled="saving" class="hover:bg-[#2563EB] cursor-pointer">
-      {{ saving ? 'Salvando alterações...' : 'Salvar alterações' }}
-    </button>
-  </form>
+  <PageContainer>
+    <header class="mb-5">
+      <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Editar Produto</h1>
+      <p class="mt-1 text-xs text-slate-500">Altere os dados e salve o produto.</p>
+    </header>
+    <p v-if="loading" class="text-xs text-slate-500">Carregando produto...</p>
+    <p v-if="error" class="mb-4 text-xs text-rose-700">{{ error }}</p>
+    <form v-if="!loading" class="grid items-start gap-5 lg:grid-cols-[1.2fr_0.9fr]" @submit.prevent="saveProduct">
+      <ProductDetailsCard
+        :form="form"
+        @update:name="form.name = $event"
+        @update:brand="form.brand = $event"
+        @update:category="form.category_id = $event"
+        @update:description="form.description = $event"
+        @update:barcode="form.barcode = $event"
+      />
+      <ProductPricingStockCards
+        v-model:cost="form.cost"
+        v-model:margin="form.margin"
+        :suggested-price="suggestedPrice"
+        :profit="profit"
+        v-model:initial-stock="form.initial_stock"
+        v-model:min-stock="form.min_stock"
+        v-model:batch-code="form.batch_code"
+        v-model:expiration="form.expiration"
+      />
+      <div class="flex items-center justify-between border-t border-slate-200 pt-4 lg:col-span-2">
+        <label class="flex items-center gap-2 text-xs text-slate-700">
+          <input v-model="form.is_active" type="checkbox" />
+          Disponibilizar no autoatendimento imediatamente
+        </label>
+        <button class="rounded-xl bg-blue-600 px-6 py-3 text-xs font-semibold text-white disabled:opacity-60" :disabled="saving">
+          {{ saving ? 'Salvando...' : 'Salvar Alterações' }}
+        </button>
+      </div>
+    </form>
+  </PageContainer>
 </template>
