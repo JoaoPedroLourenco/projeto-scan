@@ -1,7 +1,5 @@
 <script setup>
-import FormRegisterUser from '@/components/FormRegisterUser.vue'
+import AuthPage from '@/components/AuthPage.vue'
 </script>
 
-<template>
-  <FormRegisterUser />
-</template>
+<template><AuthPage mode="register" /></template>
