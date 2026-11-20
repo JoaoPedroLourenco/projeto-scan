@@ -18,6 +18,7 @@ class StockExitRequest extends FormRequest
             'quantity' => ['required', 'integer', 'min:1'],
             'reason' => ['nullable', 'string'],
             'notes' => ['nullable', 'string'],
+            'unit_price' => ['nullable', 'numeric', 'min:0'],
         ];
     }
 

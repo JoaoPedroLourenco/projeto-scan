@@ -35,7 +35,7 @@ class StockController extends Controller
 
         return response()->json([
             'ok' => true,
-            'msg' => 'Saida cadastrada com sucesso',
+            'msg' => 'Saída cadastrada com sucesso',
             'batch' => $batch,
         ]);
     }
