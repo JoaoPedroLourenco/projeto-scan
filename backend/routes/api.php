@@ -1,8 +1,8 @@
 <?php
 
-use App\Http\Controllers\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\StockController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -15,17 +15,6 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
-
-/*
-|--------------------------------------------------------------------------
-| Rotas de teste
-|--------------------------------------------------------------------------
-|
-| Rotas utilizados para fazer teste basicos de requisição
-|
-*/
-
-Route::get('/teste', [UserController::class, 'teste']);
 
 /*
 |--------------------------------------------------------------------------
@@ -48,6 +37,7 @@ Route::middleware(['auth:sanctum', 'throttle:user'])->group(function() {
     Route::prefix('auth')->group(function() {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('/me', [AuthController::class, 'me']);
+        Route::put('/me', [AuthController::class, 'update']);
         Route::get('/sessions', [AuthController::class, 'sessions']);
         Route::delete('/sessions/{tokenId}', [AuthController::class, 'revokeSession']);
         Route::delete('/sessions', [AuthController::class, 'revokeOtherSessions']);
@@ -57,12 +47,20 @@ Route::middleware(['auth:sanctum', 'throttle:user'])->group(function() {
     Route::get('/', [ProductController::class, 'index']);
     Route::get('{product}', [ProductController::class, 'show'])->whereNumber('product');
 
-    Route::middleware('admin')->group(function() {
+    Route::middleware('role:admin,manager')->group(function() {
         Route::get('lookup/{barcode}', [ProductController::class, 'lookup']);
         Route::patch('{product}/toggle-status', [ProductController::class, 'toggleStatus'])->whereNumber('product');
         Route::post('/', [ProductController::class, 'store']);
         Route::put('{product}', [ProductController::class, 'update'])->whereNumber('product');
         Route::delete('{product}', [ProductController::class, 'destroy'])->whereNumber('product');
+        });
+    });
+
+    Route::middleware('role:admin,manager,operator')->group(function(){
+        Route::prefix('stock')->group(function() {
+            Route::get('/', [StockController::class, 'index']);
+            Route::post('/entry', [StockController::class, 'entry']);
+            Route::post('/exit', [StockController::class, 'exit']);
         });
     });
 });
