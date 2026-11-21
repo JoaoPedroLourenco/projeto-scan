@@ -85,12 +85,4 @@ Route::middleware(['auth:sanctum', 'throttle:user'])->group(function() {
         Route::post('/import', [ProductController::class, 'import']);
         });
     });
-
-    Route::middleware('role:admin,manager,operator')->group(function(){
-        Route::prefix('stock')->group(function() {
-            Route::get('/', [StockController::class, 'index']);
-            Route::post('/entry', [StockController::class, 'entry']);
-            Route::post('/exit', [StockController::class, 'exit']);
-        });
-    });
 });
