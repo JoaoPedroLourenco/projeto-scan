@@ -61,6 +61,8 @@ Route::middleware(['auth:sanctum', 'throttle:user'])->group(function() {
 
     Route::prefix('cart')->group(function() {
         Route::post('/{cart}/items', [CartController::class, 'addToCart'])->whereNumber('cart');
+
+        Route::post('/{cart}/checkout', [CartController::class, 'checkout'])->whereNumber('cart');
     });
 
     Route::prefix('products')->group(function() {

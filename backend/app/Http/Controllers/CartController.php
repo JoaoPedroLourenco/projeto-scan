@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Requests\AddToCartRequest;
 use App\Actions\Cart\AddProductToCartAction;
 use App\Actions\Cart\ImportListToCartAction;
+use App\Actions\Cart\CheckoutCartAction;
 use App\Models\Cart;
 use App\Models\ShoppingList; 
 use App\Models\Product; 
@@ -39,6 +40,26 @@ class CartController extends Controller
         return response()->json([
             'ok' => true,
             'cart' => $cart,
+        ]);
+    }
+
+    public function checkout(Request $request, Cart $cart, CheckoutCartAction $action)
+    {
+        $user = $request->user();
+
+        if ($cart->user_id !== $request->user()->id) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Você não tem permissão para realizar esta ação.',
+            ], 403);
+        }
+
+        $summary = $action->execute($request->user(), $cart);
+
+        return response()->json([
+            'ok' => true,
+            'msg' => 'Compra finalizada com sucesso!',  
+            'summary' => $summary
         ]);
     }
 }
