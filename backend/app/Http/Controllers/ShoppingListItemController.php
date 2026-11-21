@@ -25,7 +25,7 @@ class ShoppingListItemController extends Controller
         if($shoppingList->user_id !== auth()->id()){
             return response()->json([
                 'ok' => false,
-                'message' => 'Produto não encontrado'
+                'msg' => 'Lista não encontrada'
             ], 404);
         }
 
@@ -33,7 +33,7 @@ class ShoppingListItemController extends Controller
 
         return response()->json([
             'ok' => true,
-            'message' => 'Item adicionado à lista de compras com sucesso',
+            'msg' => 'Item adicionado à lista de compras com sucesso',
             'shoppingItem' => $shoppingItem
         ], 201);
     }
@@ -48,7 +48,7 @@ class ShoppingListItemController extends Controller
         if($item->shopping_list_id !== $shoppingList->id || $shoppingList->user_id !== auth()->id()){
             return response()->json([
                 'ok' => false,
-                'message' => 'Produto não encontrado'
+                'msg' => 'Lista não econtrada'
             ], 404);
         }
 
@@ -56,7 +56,7 @@ class ShoppingListItemController extends Controller
 
         return response()->json([
             'ok' => true,
-            'message' => 'Item atualizado na lista de compras',
+            'msg' => 'Item atualizado na lista de compras',
             'shoppingItem' => $shoppingItem
         ], 200);
     }
@@ -69,7 +69,7 @@ class ShoppingListItemController extends Controller
         if($item->shopping_list_id !== $shoppingList->id || $shoppingList->user_id !== auth()->id()){
             return response()->json([
                 'ok' => false,
-                'message' => 'Produto não encontrado'
+                'msg' => 'Produto não encontrado'
             ], 404);
         }
 
@@ -77,7 +77,7 @@ class ShoppingListItemController extends Controller
 
         return response()->json([
             'ok' => true,
-            'message' => 'Item removido da lista de compras',
+            'msg' => 'Item removido da lista de compras',
             'shoppingItem' => $shoppingItem
         ], 200);
     }

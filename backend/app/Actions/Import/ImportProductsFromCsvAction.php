@@ -29,6 +29,11 @@ class ImportProductsFromCsvAction{
             $price = (float) ($row[1] ?? 0.0);
             $minStock = (int) ($row[2] ?? 5);
 
+            if ((!is_numeric($row[1] ?? null) || (float)$row[1] <= 0)) {
+                $failed++;
+                continue;
+            }
+
             if ($barcode == ''){
                 continue;
             }
@@ -59,8 +64,6 @@ class ImportProductsFromCsvAction{
                 }
 
                 $imported++;
-            } else if (!$data){
-                $failed++;
             }
          }
 
