@@ -1,8 +1,8 @@
 <?php
 
-use App\Http\Controllers\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\StockController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -15,17 +15,6 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
-
-/*
-|--------------------------------------------------------------------------
-| Rotas de teste
-|--------------------------------------------------------------------------
-|
-| Rotas utilizados para fazer teste basicos de requisição
-|
-*/
-
-Route::get('/teste', [UserController::class, 'teste']);
 
 /*
 |--------------------------------------------------------------------------

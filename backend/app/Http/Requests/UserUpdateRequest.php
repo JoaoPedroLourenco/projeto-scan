@@ -12,6 +12,16 @@ class UserUpdateRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'email' => strtolower(trim((string) $this->email)),
+            'name' => trim((string) $this->name),
+            'cpf' => $this->cpf ? preg_replace('/\D/', '', (string) $this->cpf) : null,
+            'phone' => $this->phone ? preg_replace('/\D/', '', (string) $this->phone) : null,
+        ]);
+    }
+    
     public function rules(): array
     {
         return [
