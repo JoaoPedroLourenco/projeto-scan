@@ -62,7 +62,7 @@ class ShoppingListController extends Controller
 
         return response()->json([
             'ok' => false,
-            'message' => 'Lista de compras não encontrada'
+            'msg' => 'Lista de compras não encontrada'
         ], 404);
     }
 
@@ -86,7 +86,7 @@ class ShoppingListController extends Controller
 
         return response()->json([
             'ok' => false,
-            'message' => 'Lista de compras não encontrada'
+            'msg' => 'Lista de compras não encontrada'
         ], 404);
     }
 
@@ -102,13 +102,13 @@ class ShoppingListController extends Controller
 
             return response()->json([
                 'ok' => true,
-                'message' => 'Lista de compras deletada com sucesso'
-            ], 204);
+                'msg' => 'Lista de compras deletada com sucesso'
+            ], 200);
         }  
 
         return response()->json([
             'ok' => false,
-            'message' => 'Lista de compras não encontrada'
+            'msg' => 'Lista de compras não encontrada'
         ], 404);  
     }
 }

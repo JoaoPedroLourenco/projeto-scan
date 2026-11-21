@@ -61,6 +61,14 @@ Route::middleware(['auth:sanctum', 'throttle:user'])->group(function() {
 
     Route::prefix('cart')->group(function() {
         Route::post('/{cart}/items', [CartController::class, 'addToCart'])->whereNumber('cart');
+
+        Route::post('/{cart}/checkout', [CartController::class, 'checkout'])->whereNumber('cart');
+
+        Route::post('/', [CartController::class, 'store']);
+
+        Route::get('/{cart}', [CartController::class, 'show'])->whereNumber('cart');     
+        Route::put('/{cart}/items/{item}', [CartController::class, 'updateItem'])->whereNumber(['cart', 'item']);
+        Route::delete('/{cart}/items/{item}', [CartController::class, 'removeItem'])->whereNumber(['cart', 'item']);
     });
 
     Route::prefix('products')->group(function() {
@@ -73,6 +81,8 @@ Route::middleware(['auth:sanctum', 'throttle:user'])->group(function() {
         Route::post('/', [ProductController::class, 'store']);
         Route::put('{product}', [ProductController::class, 'update'])->whereNumber('product');
         Route::delete('{product}', [ProductController::class, 'destroy'])->whereNumber('product');
+
+        Route::post('/import', [ProductController::class, 'import']);
         });
     });
 });

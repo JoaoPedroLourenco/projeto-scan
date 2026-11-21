@@ -18,6 +18,7 @@ class AddItemToShoppingListAction {
                 $shoppingItem = $shoppingList->items()->create([
                     'shopping_list_id' => $shoppingList->id,
                     'product_id' => $product->id,
+                    'user_id' => $shoppingList->user_id,
                     'quantity' => $quantity,
                     'is_checked' => false,
                 ]);
