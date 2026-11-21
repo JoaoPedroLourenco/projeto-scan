@@ -73,6 +73,8 @@ Route::middleware(['auth:sanctum', 'throttle:user'])->group(function() {
         Route::post('/', [ProductController::class, 'store']);
         Route::put('{product}', [ProductController::class, 'update'])->whereNumber('product');
         Route::delete('{product}', [ProductController::class, 'destroy'])->whereNumber('product');
+
+        Route::post('/import', [ProductController::class, 'import']);
         });
     });
 
