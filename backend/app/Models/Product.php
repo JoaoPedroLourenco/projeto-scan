@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Builder;
 
 class Product extends Model
@@ -35,5 +36,10 @@ class Product extends Model
     public function allergens(): BelongsToMany
     {
         return $this->belongsToMany(Allergen::class);
+    }
+
+    public function stockBatches(): HasMany  
+    {
+        return $this->HasMany(StockBatch::class);
     }
 }

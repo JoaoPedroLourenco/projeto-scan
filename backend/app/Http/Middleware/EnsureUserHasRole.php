@@ -6,19 +6,20 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class UserIsAdmin
+class EnsureUserHasRole
 {
     /**
      * Handle an incoming request.
      *
      * @param  Closure(Request): (Response)  $next
      */
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next, ...$roles): Response
     {
-        if (! $request->user() || $request->user()->role !== 'admin') {
+        $user = $request->user();
+        if (! $user || ! in_array($user->role->value, $roles) || $user->is_active === false) {
             return response()->json([
                 'ok' => false,
-                'message' => 'Acesso negado. Apenas administradores podem realizar esta ação.'
+                'msg' => 'Acesso negado.'
             ], 403);
         }
 
