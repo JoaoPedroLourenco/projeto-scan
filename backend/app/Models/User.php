@@ -3,8 +3,11 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+
+use App\Enums\UserRole;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;   
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -25,8 +28,6 @@ class User extends Authenticatable
         'phone',
         'role',
         'password',
-        'phone',
-        'role',
         'is_active'
     ];
 
@@ -49,10 +50,29 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
         'is_active' => 'boolean',
+        'role' => UserRole::class,
     ];
+
+    public function isAdmin(): bool{
+        return $this->role === UserRole::admin;
+    }
+    public function isManager(): bool{
+        return $this->role === UserRole::manager;
+    }
+    public function isOperator(): bool{
+        return $this->role === UserRole::operator;
+    }
+    public function isCustomer(): bool{
+        return $this->role === UserRole::customer;
+    }
 
     public function allergens(): BelongsToMany
     {
         return $this->belongsToMany(Allergen::class);
+    }
+
+    public function shoppingLists(): HasMany
+    {
+        return $this->hasMany(ShoppingList::class);
     }
 }

@@ -4,14 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Actions\Auth\RegisterUserAction;
 use App\Actions\Auth\LoginUserAction;
+use App\Actions\Auth\LogoutUserAction;
+use App\Actions\Auth\UpdateUserProfileAction;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
+use App\Http\Requests\UpdateUserAllergensRequest;
+use App\Http\Requests\UserUpdateRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
-    function register(RegisterRequest $request, RegisterUserAction $action) {
+    function register(RegisterRequest $request, RegisterUserAction $action): JsonResponse
+    {
         $result = $action->execute($request->validated());
 
         return response()->json([
@@ -21,7 +26,8 @@ class AuthController extends Controller
         ], 201);
     }
 
-    public function login(LoginRequest $request, LoginUserAction $action) {
+    public function login(LoginRequest $request, LoginUserAction $action): JsonResponse
+    {
         $result = $action->execute($request->validated());
 
         if (! $result) {
@@ -38,8 +44,12 @@ class AuthController extends Controller
         ]);
     }
 
-    function logout(Request $request) {
-        $request->user()->currentAccessToken()->delete();
+    function logout(Request $request, LogoutUserAction $action): JsonResponse
+    {
+        
+        $user = $request->user();
+
+        $action->execute($user);
 
         return response()->json([
             'ok' => true,
@@ -50,7 +60,30 @@ class AuthController extends Controller
     function me(Request $request) {
         return response()->json([
             'ok' => true,
-            'user' => $request->user(),
+            'user' => $request->user()->load('allergens'),
+        ]);
+    }
+
+    function syncAllergens(UpdateUserAllergensRequest $request): JsonResponse
+    {
+        $user = $request->user();
+        $user->allergens()->sync($request->input('allergen_ids', []));
+
+        return response()->json([
+            'ok' => true,
+            'allergens' => $user->allergens()->get(),
+            'msg' => 'Alergias atualizadas com sucesso',
+        ]);
+    }
+
+    public function update(UserUpdateRequest $request, UpdateUserProfileAction $action): JsonResponse
+    {
+        $user = $action->execute($request->user(), $request->validated());
+
+
+        return response()->json([
+            'ok' => true,
+            'user' => $user,
         ]);
     }
 

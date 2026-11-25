@@ -37,7 +37,11 @@ class BarcodeLookupService
             ];
         }
 
-        $response = Http::get("https://world.openfoodfacts.org/api/v2/product/{$barcode}.json");
+        try {
+            $response = Http::timeout(5)->get("https://world.openfoodfacts.org/api/v2/product/{$barcode}.json");
+        } catch (\Illuminate\Http\Client\ConnectionException $exception) {
+            return null; 
+        }    
 
         if ($response->failed() || !isset($response['product'])) {
             return null;

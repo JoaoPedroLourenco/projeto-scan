@@ -6,8 +6,10 @@ use App\Actions\Product\CreateProductAction;
 use App\Actions\Product\ToggleProductAction;
 use App\Actions\Product\UpdateProductAction;
 use App\Actions\Product\DeleteProductAction;
+use App\Actions\Import\ImportProductsFromCsvAction;
 use App\Filters\ProductFilter;
 use App\Http\Requests\ProductRequest;
+use App\Http\Requests\ImportProductsCsvRequest;
 use App\Models\Product;
 use App\Services\BarcodeLookupService;
 use Illuminate\Http\JsonResponse;
@@ -87,5 +89,14 @@ class ProductController extends Controller
             'ok' => true,
             'msg' => 'Produto deletado'
         ]);
+    }
+
+    public function import(ImportProductsCsvRequest $request, ImportProductsFromCsvAction $action): JsonResponse
+    {
+        $file = $request->file('file');
+
+        $result = $action->execute($file->getRealPath());
+
+        return response()->json($result);
     }
 }
