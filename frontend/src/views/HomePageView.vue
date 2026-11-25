@@ -1,9 +1,5 @@
 <script setup>
-import LogoutButton from '@/components/LogoutButton.vue'
+import HomeContent from '@/components/HomeContent.vue'
 </script>
 
-<template>
-  <h1>Home page</h1>
-
-  <LogoutButton />
-</template>
+<template><HomeContent /></template>

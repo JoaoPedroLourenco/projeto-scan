@@ -4,60 +4,47 @@ import { registerUser } from '../services/authService.js'
 import { useRouter } from 'vue-router'
 import { formatCpf, formatPhone } from '../utils/masks.js'
 
-// variáveis do formulário
 const nomeUser = ref('')
 const emailUser = ref('')
 const cpfUser = ref('')
 const telefoneUser = ref('')
 const senhaUser = ref('')
 const confirmarSenha = ref('')
-
-// variáveis para controle do envio e retorno do formulário
-let mensagemReturn = ref('')
+const mensagemReturn = ref('')
 const loading = ref(false)
+const router = useRouter()
 
-// Máscaras para os inputs de telefone e CPF
 function handleCpfInput(event) {
   cpfUser.value = formatCpf(event.target.value)
 }
-
 function handlePhoneInput(event) {
   telefoneUser.value = formatPhone(event.target.value)
 }
-
-const router = useRouter()
-
 async function register() {
-  loading.value = true
   mensagemReturn.value = ''
-
+  if (senhaUser.value !== confirmarSenha.value) {
+    mensagemReturn.value = 'As senhas não coincidem.'
+    return
+  }
+  loading.value = true
   try {
     const user = {
       name: nomeUser.value,
       email: emailUser.value,
       cpf: cpfUser.value.replace(/\D/g, ''),
-      phone: telefoneUser.value.replace(/\D/g, ''),
+      telefone: telefoneUser.value.replace(/\D/g, ''),
       password: senhaUser.value,
       password_confirmation: confirmarSenha.value,
     }
-
     const response = await registerUser(user)
-
-    // salva token no sessionStorage para verificação de autenticação.
     sessionStorage.setItem('token', response.data?.token)
-
-    mensagemReturn.value = 'Cadastro realizado com sucesso!'
-
-    // redirecionamento para a página inicial após cadastro com sucesso
     router.push('/home')
   } catch (error) {
-    // retorna a mensagem de erro diretamente da API (temporário)
+    const backendErrors = error.response?.data?.errors
     mensagemReturn.value =
+      (backendErrors && Object.values(backendErrors).flat()[0]) ||
       error.response?.data?.message ||
-      error.response?.data?.message ||
-      'Erro ao conectar com o servidor.'
-    console.log(error.response?.status)
-    console.log(error.response?.data)
+      'Não foi possível concluir o cadastro. Verifique os dados.'
   } finally {
     loading.value = false
   }
@@ -65,69 +52,104 @@ async function register() {
 </script>
 
 <template>
-  Registro
-
-  <div v-if="mensagemReturn != ''">
-    {{ mensagemReturn }}
-  </div>
-
-  <form @submit.prevent="register">
-    <label for="name"> Nome: * </label>
-    <input v-model="nomeUser" type="text" name="name" id="name" maxlength="100" />
-    <label for="email"> </label>
-    E-mail: *
-    <input
-      v-model="emailUser"
-      type="email"
-      name="email"
-      id="email"
-      minlength="10"
-      maxlength="100"
-      placeholder="exemplo@email.com"
-    />
-    <label for="cpf">CPF:</label>
-    <input
-      id="cpf"
-      :value="cpfUser"
-      @input="handleCpfInput"
-      placeholder="000.000.000-00"
-      inputmode="numeric"
-      minlength="14"
-      maxlength="14"
-    />
-
-    <label for="telefone">Telefone:</label>
-    <input
-      id="telefone"
-      :value="telefoneUser"
-      @input="handlePhoneInput"
-      placeholder="(11) 99000-9999"
-      inputmode="numeric"
-      minlength="14"
-    />
-    <label for="senha"> Senha: * </label>
-    <input
-      v-model="senhaUser"
-      type="password"
-      name="senha"
-      id="senha"
-      minlength="8"
-      placeholder="***********"
-    />
-    <label for="confirmarSenha"> Confirmar senha: * </label>
-    <input
-      v-model="confirmarSenha"
-      type="password"
-      name="confirmarSenha"
-      id="confirmarSenha"
-      minlength="8"
-      placeholder="***********"
-    />
-
-    <button type="submit" :disabled="loading">
-      {{ loading ? 'Carregando...' : 'Cadastrar' }}
+  <form @submit.prevent="register" class="w-full space-y-3">
+    <div
+      v-if="mensagemReturn"
+      class="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700"
+    >
+      {{ mensagemReturn }}
+    </div>
+    <div>
+      <label for="name" class="mb-1.5 block text-xs font-medium text-slate-900">Nome Completo</label
+      ><input
+        v-model="nomeUser"
+        id="name"
+        name="name"
+        maxlength="100"
+        placeholder="Ex: João da Silva"
+        required
+        class="auth-input"
+      />
+    </div>
+    <div>
+      <label for="email" class="mb-1.5 block text-xs font-medium text-slate-900">E-mail</label
+      ><input
+        v-model="emailUser"
+        type="email"
+        id="email"
+        name="email"
+        minlength="10"
+        maxlength="100"
+        placeholder="seu.email@exemplo.com"
+        required
+        class="auth-input"
+      />
+    </div>
+    <div>
+      <label for="cpf" class="mb-1.5 block text-xs font-medium text-slate-900"
+        >CPF (para cupom fiscal e identificação rápida)</label
+      ><input
+        id="cpf"
+        :value="cpfUser"
+        @input="handleCpfInput"
+        placeholder="000.000.000-00"
+        inputmode="numeric"
+        minlength="14"
+        maxlength="14"
+        required
+        class="auth-input"
+      />
+    </div>
+    <div>
+      <label for="telefone" class="mb-1.5 block text-xs font-medium text-slate-900"
+        >Telefone (opcional)</label
+      ><input
+        id="telefone"
+        :value="telefoneUser"
+        @input="handlePhoneInput"
+        placeholder="(11) 99000-9999"
+        inputmode="numeric"
+        maxlength="15"
+        class="auth-input"
+      />
+    </div>
+    <div>
+      <div class="mb-1.5 flex items-center justify-between">
+        <label for="senha" class="text-xs font-medium text-slate-900">Senha</label
+        ><span class="text-[10px] font-medium text-emerald-600">Mínimo: 8 dígitos</span>
+      </div>
+      <input
+        v-model="senhaUser"
+        type="password"
+        id="senha"
+        name="senha"
+        minlength="8"
+        placeholder="Crie sua senha segura"
+        required
+        class="auth-input"
+      />
+    </div>
+    <div>
+      <label for="confirmarSenha" class="mb-1.5 block text-xs font-medium text-slate-900"
+        >Confirmar senha</label
+      ><input
+        v-model="confirmarSenha"
+        type="password"
+        id="confirmarSenha"
+        name="confirmarSenha"
+        minlength="8"
+        placeholder="Digite a senha novamente"
+        required
+        class="auth-input"
+      />
+    </div>
+    <button
+      type="submit"
+      :disabled="loading"
+      class="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-xs font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:bg-blue-400"
+    >
+      {{ loading ? 'Cadastrando...' : 'Criar Conta Beepo' }}
+      <span v-if="!loading" aria-hidden="true">→</span>
     </button>
   </form>
-
-  <RouterLink to="/login">Login</RouterLink>
 </template>

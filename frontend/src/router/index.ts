@@ -2,6 +2,12 @@ import { createRouter, createWebHistory } from 'vue-router'
 import LoginPageView from '@/views/LoginPageView.vue'
 import RegisterPageView from '@/views/RegisterPageView.vue'
 import HomePageView from '@/views/HomePageView.vue'
+import CreateProductView from '@/views/CreateProductView.vue'
+import ProductsListView from '@/views/ProductsListView.vue'
+import EditProductView from '@/views/EditProductView.vue'
+import CatalogView from '@/views/CatalogView.vue'
+import ScannerView from '@/views/ScannerView.vue'
+import ProfileView from '@/views/ProfileView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -21,9 +27,39 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: '/catalogo',
+      component: CatalogView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/scanner',
+      component: ScannerView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/perfil',
+      component: ProfileView,
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/login',
       component: LoginPageView,
       meta: { guestOnly: true },
+    },
+    {
+      path: '/produtos',
+      component: ProductsListView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/produtos/registro',
+      component: CreateProductView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/produtos/editar/:id',
+      component: EditProductView,
+      meta: { requiresAuth: true },
     },
   ],
 })
