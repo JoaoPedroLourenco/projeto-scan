@@ -25,3 +25,6 @@ export function formatPhone(value) {
 
   return phone
 }
+
+export const formatCurrency = (value) =>
+  Number(value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })

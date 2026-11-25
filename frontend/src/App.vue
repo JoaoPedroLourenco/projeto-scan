@@ -17,8 +17,12 @@ watch(
 )
 
 function toggleSidebar() {
-  sidebarOpen.value = !sidebarOpen.value
-  mobileMenuOpen.value = sidebarOpen.value
+  if (window.innerWidth < 1024) {
+    sidebarOpen.value = true
+    mobileMenuOpen.value = !mobileMenuOpen.value
+  } else {
+    sidebarOpen.value = !sidebarOpen.value
+  }
 }
 </script>
 
