@@ -1,16 +1,46 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import LoginPageView from '@/views/LoginPageView.vue'
 import RegisterPageView from '@/views/RegisterPageView.vue'
+import HomePageView from '@/views/HomePageView.vue'
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHistory(),
   routes: [
     {
       path: '/',
-      name: 'login',
+      redirect: '/login',
+    },
+    {
+      path: '/register',
       component: RegisterPageView,
+      meta: { guestOnly: true },
+    },
+    {
+      path: '/home',
+      component: HomePageView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/login',
+      component: LoginPageView,
+      meta: { guestOnly: true },
     },
   ],
+})
+
+router.beforeEach((to) => {
+  const token = sessionStorage.getItem('token')
+  const isAuthenticated = Boolean(token) // se existir token é true
+
+  // usuário não autenticado é redirecionado para página de login
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    return '/login'
+  }
+
+  // usuário já logado tentando acessar a página de login, é encaminhado para a home.
+  if (to.meta.guestOnly && isAuthenticated) {
+    return '/home'
+  }
 })
 
 export default router
