@@ -36,7 +36,12 @@ async function finalizeCheckout() {
     items.value = []
     checkoutSuccess.value = true
   } catch (err) {
-    error.value = err.response?.data?.msg || err.response?.data?.message || 'Não foi possível finalizar a compra.'
+    const backendErrors = err.response?.data?.errors
+    error.value =
+      (backendErrors && Object.values(backendErrors).flat()[0]) ||
+      err.response?.data?.msg ||
+      err.response?.data?.message ||
+      'Não foi possível finalizar a compra.'
   } finally {
     loading.value = false
   }

@@ -42,8 +42,13 @@ async function handleAddToCart(product) {
       cartFeedback.value = `${product.name} adicionado à sacola.`
       setTimeout(() => (cartFeedback.value = ''), 3000)
     }
-  } catch {
-    cartFeedback.value = 'Não foi possível adicionar o produto à sacola.'
+  } catch (err) {
+    const backendErrors = err.response?.data?.errors
+    cartFeedback.value =
+      (backendErrors && Object.values(backendErrors).flat()[0]) ||
+      err.response?.data?.msg ||
+      err.response?.data?.message ||
+      'Não foi possível adicionar o produto à sacola.'
     setTimeout(() => (cartFeedback.value = ''), 3000)
   }
 }

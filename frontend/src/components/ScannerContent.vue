@@ -47,8 +47,13 @@ async function handleBarcode(code) {
     } else {
       error.value = `Nenhum produto cadastrado com o código ${code}.`
     }
-  } catch {
-    error.value = 'Erro ao consultar código de barras.'
+  } catch (err) {
+    const backendErrors = err.response?.data?.errors
+    error.value =
+      (backendErrors && Object.values(backendErrors).flat()[0]) ||
+      err.response?.data?.msg ||
+      err.response?.data?.message ||
+      'Erro ao consultar código de barras.'
   } finally {
     loading.value = false
   }

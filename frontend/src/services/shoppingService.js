@@ -38,17 +38,18 @@ export async function getCartItems() {
 }
 
 export async function addToCart(product, quantidade = 1) {
-  const cartId = await ensureCartId()
+  let cartId = await ensureCartId()
   try {
     await api.post(`/cart/${cartId}/items`, { product_id: product.id, quantity: quantidade })
   } catch (err) {
-    if (err.response?.status === 422) {
-      const msg =
-        err.response?.data?.errors?.allergen?.[0] ||
-        err.response?.data?.message ||
-        'Este produto possui alérgenos incompatíveis com o seu perfil.'
+    if (err.response?.status === 422 && err.response?.data?.errors?.allergen) {
+      const msg = err.response.data.errors.allergen[0]
       if (!window.confirm(`${msg}\n\nDeseja adicionar mesmo assim?`)) return false
       await api.post(`/cart/${cartId}/items`, { product_id: product.id, quantity: quantidade, ignore_allergens: true })
+    } else if (err.response?.status === 422 && err.response?.data?.errors?.cart) {
+      sessionStorage.removeItem('active_cart_id')
+      cartId = await ensureCartId()
+      await api.post(`/cart/${cartId}/items`, { product_id: product.id, quantity: quantidade })
     } else {
       throw err
     }
@@ -123,11 +124,22 @@ export async function removeListItem(itemId) {
 
 export async function importListToCart() {
   const listId = await ensureListId()
+  const list = await getListItems()
+  const checked = list.filter((i) => i.is_checked && i.product)
+  if (!checked.length) return 0
+
   const res = await api.post(`/shopping-lists/${listId}/start-cart`)
   if (res.data?.cart?.id) {
     sessionStorage.setItem('active_cart_id', String(res.data.cart.id))
   }
+
+  let enviados = 0
+  for (const item of checked) {
+    const ok = await addToCart(item.product, item.quantity || 1)
+    if (ok) enviados++
+  }
+
   window.dispatchEvent(new Event('cart-updated'))
   window.dispatchEvent(new Event('list-updated'))
-  return res.data?.cart?.items?.length || 0
+  return enviados
 }
