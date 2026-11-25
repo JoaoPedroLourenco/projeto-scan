@@ -1,7 +1,5 @@
 <script setup>
-import SideBar from '@/components/SideBar.vue'
+import HomeContent from '@/components/HomeContent.vue'
 </script>
 
-<template>
-  <h1>Home page</h1>
-</template>
+<template><HomeContent /></template>

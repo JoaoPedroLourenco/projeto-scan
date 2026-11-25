@@ -1,78 +1,126 @@
 <script setup>
+import { computed, reactive, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { createProducts } from '../../services/productService.js'
-import { ref, watch } from 'vue'
-import { useProduct } from '../../composables/useProduct'
+import { useProduct } from '../../composables/useProduct.js'
+import InputBarCode from './InputBarCode.vue'
+import ScannerBarCode from './ScannerBarCode.vue'
+import ProductDetailsCard from './ProductDetailsCard.vue'
+import ProductPricingStockCards from './ProductPricingStockCards.vue'
+import PageContainer from '../ui/PageContainer.vue'
 
+const router = useRouter()
 const { produto } = useProduct()
-
-watch(produto, (novoProduto) => {
-  if (novoProduto) {
-    id_categoria.value = novoProduto.product.category_id
-    name_product.value = novoProduto.product.name
-    barcode.value = novoProduto.product.barcode
-    descricao.value = novoProduto.product.description
-    preco.value = novoProduto.product.price
-    min_stock.value = novoProduto.product.min_stock
-  }
+const loading = ref(false)
+const scannerOpen = ref(false)
+const message = ref('')
+const error = ref('')
+const allergens = ref([])
+const form = reactive({
+  category_id: '', name: '', brand: '', description: '', barcode: '',
+  price: 0, cost: 0, margin: 0, min_stock: 5, initial_stock: 0,
+  batch_code: '', expiration: '', is_active: true,
 })
 
-// variáveis do formulário
-const id_categoria = ref('')
-const name_product = ref('')
-const barcode = ref('')
-const descricao = ref('')
-const preco = ref(0)
-const min_stock = ref(0)
+const suggestedPrice = computed(() =>
+  form.cost ? form.cost * (1 + form.margin / 100) : Number(form.price),
+)
+const profit = computed(() => suggestedPrice.value - Number(form.cost))
 
-let loading = false
-const returnMessage = ref('')
+watch(produto, (result) => {
+  const product = result?.product
+  if (!product) return
+  Object.assign(form, {
+    category_id: product.category_id,
+    name: product.name,
+    brand: product.brand || '',
+    description: product.description || '',
+    barcode: product.barcode || '',
+    price: Number(product.price || 0),
+    min_stock: Number(product.min_stock || 5),
+  })
+  allergens.value = product.allergens || []
+})
 
 async function registerProduct() {
-  loading = true
+  loading.value = true
+  error.value = ''
+  const productInfo = {
+    category_id: Number(form.category_id),
+    name: form.name,
+    barcode: form.barcode,
+    description: form.description,
+    price: Number(suggestedPrice.value),
+    min_stock: Number(form.min_stock),
+  }
 
   try {
-    const newProduct = {
-      category_id: Number(id_categoria.value),
-      name: name_product.value,
-      barcode: barcode.value,
-      description: descricao.value,
-      price: preco.value,
-      min_stock: min_stock.value,
-    }
-
-    await createProducts(newProduct)
-
-    returnMessage.value = 'Produto cadastrado com sucesso!'
-  } catch (error) {
-    console.error('Erro ao cadastrar produto:', error.response?.data ?? error.message)
+    await createProducts(productInfo)
+    message.value = 'Produto cadastrado com sucesso.'
+    window.setTimeout(() => router.push('/produtos'), 900)
+  } catch (cause) {
+    error.value = cause.response?.data?.message || 'Não foi possível cadastrar o produto.'
   } finally {
-    loading = false
+    loading.value = false
   }
+}
+
+function handleBarcode(code) {
+  form.barcode = code
+  scannerOpen.value = false
 }
 </script>
 
 <template>
-  <form @submit.prevent="registerProduct" class="w-2/4 flex flex-col">
-    <label for="id_categoria">Id categoria</label>
-    <input type="text" id="id_categoria" name="id_categoria" v-model="id_categoria" />
+  <PageContainer>
+    <header class="mb-5">
+      <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Cadastro de Produtos</h1>
+      <p class="mt-1 text-xs text-slate-500">Bipe ou digite o código de barras para preencher os dados.</p>
+    </header>
 
-    <label for="name_product">Nome do produto</label>
-    <input type="text" id="name_product" name="name_product" v-model="name_product" />
+    <div class="mb-5 flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-2 shadow-sm">
+      <InputBarCode />
+      <button
+        type="button"
+        class="rounded-lg border border-slate-200 px-4 py-2.5 text-xs font-medium text-blue-600"
+        @click="scannerOpen = !scannerOpen"
+      >
+        {{ scannerOpen ? 'Fechar scanner' : 'Scanner' }}
+      </button>
+    </div>
+    <ScannerBarCode v-if="scannerOpen" @codigo-lido="handleBarcode" />
+    <p v-if="message" class="my-3 text-xs text-emerald-700">{{ message }}</p>
+    <p v-if="error" class="my-3 text-xs text-rose-700">{{ error }}</p>
 
-    <label for="barcode">Código de Barras (EAN/GTIN/UPC)</label>
-    <input type="text" id="barcode" name="barcode" v-model="barcode" />
-
-    <label for="descricao">Descrição</label>
-    <input type="text" id="descricao" name="descricao" v-model="descricao" />
-
-    <label for="preco">Preço</label>
-    <input type="number" id="preco" name="preco" v-model.number="preco" />
-
-    <label for="min_stock">Estoque Mínimo</label>
-    <input type="number" id="min_stock" name="min_stock" v-model.number="min_stock" />
-
-    <button type="submit" :disabled="loading" class="hover:bg-[#2563EB] cursor-pointer">
-      {{ loading ? 'Enviando...' : 'Cadastrar' }}
-    </button>
-  </form>
+    <form class="grid items-start gap-5 lg:grid-cols-[1.2fr_0.9fr]" @submit.prevent="registerProduct">
+      <ProductDetailsCard
+        :form="form"
+        :allergens="allergens"
+        @update:name="form.name = $event"
+        @update:brand="form.brand = $event"
+        @update:category="form.category_id = $event"
+        @update:description="form.description = $event"
+        @update:barcode="form.barcode = $event"
+      />
+      <ProductPricingStockCards
+        v-model:cost="form.cost"
+        v-model:margin="form.margin"
+        :suggested-price="suggestedPrice"
+        :profit="profit"
+        v-model:initial-stock="form.initial_stock"
+        v-model:min-stock="form.min_stock"
+        v-model:batch-code="form.batch_code"
+        v-model:expiration="form.expiration"
+      />
+      <div class="flex items-center justify-between border-t border-slate-200 pt-4 lg:col-span-2">
+        <label class="flex items-center gap-2 text-xs text-slate-700">
+          <input v-model="form.is_active" type="checkbox" />
+          Disponibilizar no autoatendimento imediatamente
+        </label>
+        <button class="rounded-xl bg-blue-600 px-6 py-3 text-xs font-semibold text-white disabled:opacity-60" :disabled="loading">
+          {{ loading ? 'Salvando...' : 'Salvar Produto' }}
+        </button>
+      </div>
+    </form>
+  </PageContainer>
 </template>

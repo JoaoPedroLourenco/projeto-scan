@@ -20,4 +20,13 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  build: {
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          groups: [{ name: 'html5-qrcode', test: /node_modules[\\/]html5-qrcode/ }],
+        },
+      },
+    },
+  },
 })

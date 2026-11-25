@@ -5,6 +5,9 @@ import HomePageView from '@/views/HomePageView.vue'
 import CreateProductView from '@/views/CreateProductView.vue'
 import ProductsListView from '@/views/ProductsListView.vue'
 import EditProductView from '@/views/EditProductView.vue'
+import CatalogView from '@/views/CatalogView.vue'
+import ScannerView from '@/views/ScannerView.vue'
+import ProfileView from '@/views/ProfileView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -21,6 +24,21 @@ const router = createRouter({
     {
       path: '/home',
       component: HomePageView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/catalogo',
+      component: CatalogView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/scanner',
+      component: ScannerView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/perfil',
+      component: ProfileView,
       meta: { requiresAuth: true },
     },
     {

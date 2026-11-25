@@ -1,9 +1,5 @@
 <script setup>
-import FormLogin from '@/components/FormLogin.vue'
+import AuthPage from '@/components/AuthPage.vue'
 </script>
 
-<template>
-  Login Page
-
-  <FormLogin />
-</template>
+<template><AuthPage mode="login" /></template>

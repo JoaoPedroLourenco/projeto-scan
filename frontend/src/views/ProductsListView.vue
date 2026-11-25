@@ -1,9 +1,5 @@
 <script setup>
-import ProductsList from '@/components/produtos/ProductsList.vue'
+import ProductsList from '@/components/Produtos/ProductsList.vue'
 </script>
 
-<template>
-  <h1>Lista de produtos</h1>
-
-  <ProductsList />
-</template>
+<template><ProductsList /></template>

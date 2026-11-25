@@ -23,14 +23,23 @@ async function lookupByBarcode() {
 </script>
 
 <template>
-  <form @submit.prevent="lookupByBarcode">
-    <label for="barcode">Código de barras</label>
-    <input type="text" name="barcode" id="barcode" v-model="barcode" />
-
-    <button type="submit">Enviar</button>
-  </form>
-
-  <div v-if="produto">
-    {{ produto.name }}
+  <div class="min-w-0 flex-1">
+    <form class="flex items-center gap-2" @submit.prevent="lookupByBarcode">
+      <input
+        type="text"
+        name="barcode"
+        id="barcode"
+        v-model="barcode"
+        placeholder="Digite o código de barras (EAN)..."
+        class="min-w-0 flex-1 bg-transparent px-2 py-2 text-sm text-slate-700 outline-none placeholder:text-slate-400"
+      />
+      <button
+        type="submit"
+        class="rounded-lg bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white hover:bg-blue-700"
+      >
+        Buscar
+      </button>
+    </form>
+    <p v-if="produto" class="px-2 text-[11px] text-emerald-700">{{ produto.name }}</p>
   </div>
 </template>
