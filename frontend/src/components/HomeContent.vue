@@ -10,10 +10,17 @@ import { addToCart } from '../services/shoppingService.js'
 const featuredProducts = ref([])
 const cartFeedback = ref('')
 
-function handleAddToCart(product) {
-  addToCart(product, 1)
-  cartFeedback.value = `${product.name} adicionado à sacola.`
-  setTimeout(() => (cartFeedback.value = ''), 3000)
+async function handleAddToCart(product) {
+  try {
+    const added = await addToCart(product, 1)
+    if (added) {
+      cartFeedback.value = `${product.name} adicionado à sacola.`
+      setTimeout(() => (cartFeedback.value = ''), 3000)
+    }
+  } catch {
+    cartFeedback.value = 'Não foi possível adicionar o produto à sacola.'
+    setTimeout(() => (cartFeedback.value = ''), 3000)
+  }
 }
 
 onMounted(async () => {

@@ -48,7 +48,7 @@ const allergenText = (item) => (typeof item === 'object' && item !== null ? item
             <option value="" disabled>Selecione uma categoria</option>
             <option v-for="cat in categoryOptions" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
           </select>
-          <input v-else :value="form.category_id" @input="emit('update:category', $event.target.value)" inputmode="numeric" placeholder="ID da categoria" class="product-input" />
+          <input v-else :value="form.category_id" @input="emit('update:category', $event.target.value)" inputmode="numeric" placeholder="ID da categoria" required class="product-input" />
         </label>
         <label class="text-xs font-medium text-slate-600 sm:col-span-2">
           Descrição

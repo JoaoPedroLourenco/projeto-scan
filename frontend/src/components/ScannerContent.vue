@@ -15,7 +15,7 @@ const allProducts = ref([])
 async function loadProducts() {
   try {
     const res = await showAllProducts()
-    allProducts.value = Array.isArray(res.data) ? res.data : res.data ?? []
+    allProducts.value = Array.isArray(res.data) ? res.data : res.data?.data ?? []
   } catch (err) {
     console.error('Erro ao carregar catálogo para scanner:', err)
   }
@@ -39,9 +39,11 @@ async function handleBarcode(code) {
     }
 
     if (productFound) {
-      addToCart(productFound, 1)
-      successNotice.value = `${productFound.name} (${formatCurrency(productFound.price)}) colocado na sacola.`
-      setTimeout(() => (successNotice.value = ''), 4000)
+      const added = await addToCart(productFound, 1)
+      if (added) {
+        successNotice.value = `${productFound.name} (${formatCurrency(productFound.price)}) colocado na sacola.`
+        setTimeout(() => (successNotice.value = ''), 4000)
+      }
     } else {
       error.value = `Nenhum produto cadastrado com o código ${code}.`
     }

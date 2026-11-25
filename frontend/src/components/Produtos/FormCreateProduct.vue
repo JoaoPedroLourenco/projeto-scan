@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { createProducts, getAllergensFromProducts, getCategoriesFromProducts, saveProductStock, showAllProducts } from '../../services/productService.js'
+import { createProducts, getAllergensFromProducts, getCategoriesFromProducts, registerStockEntry, saveProductStock, showAllProducts } from '../../services/productService.js'
 import { useProduct } from '../../composables/useProduct.js'
 import InputBarCode from './InputBarCode.vue'
 import ScannerBarCode from './ScannerBarCode.vue'
@@ -75,6 +75,20 @@ async function registerProduct() {
       allergens: idsAlergenos,
     })
 
+    if (res?.product?.id && Number(form.initial_stock) > 0 && form.batch_code && form.expiration) {
+      try {
+        await registerStockEntry({
+          product_id: res.product.id,
+          batch_code: form.batch_code,
+          quantity: Number(form.initial_stock),
+          expiration_date: form.expiration,
+          unit_price: precoFinal,
+        })
+      } catch {
+        /* fallback local abaixo se /stock/entry não estiver disponível */
+      }
+    }
+
     saveProductStock(res?.product?.id, {
       stock_quantity: form.initial_stock,
       batch_code: form.batch_code,
@@ -84,7 +98,12 @@ async function registerProduct() {
     message.value = 'Produto cadastrado com sucesso.'
     setTimeout(() => router.push('/produtos'), 900)
   } catch (err) {
-    error.value = err.response?.data?.message || 'Não foi possível cadastrar o produto.'
+    const backendErrors = err.response?.data?.errors
+    error.value =
+      (backendErrors && Object.values(backendErrors).flat()[0]) ||
+      err.response?.data?.msg ||
+      err.response?.data?.message ||
+      'Não foi possível cadastrar o produto.'
   } finally {
     loading.value = false
   }

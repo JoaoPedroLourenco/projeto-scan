@@ -1,123 +1,133 @@
-const CART_KEY = 'beepo_consumer_cart'
-const LIST_KEY = 'beepo_consumer_shopping_list'
+import api from './api'
 
-function lerLista(chave) {
+async function ensureCartId() {
+  let cartId = sessionStorage.getItem('active_cart_id')
+  if (cartId) return cartId
+  const res = await api.post('/cart')
+  cartId = res.data?.cart?.id
+  if (cartId) sessionStorage.setItem('active_cart_id', String(cartId))
+  return cartId
+}
+
+async function ensureListId() {
+  let listId = sessionStorage.getItem('active_list_id')
+  if (listId) return listId
+  const res = await api.get('/shopping-lists')
+  const lists = res.data?.shoppingLists || []
+  if (lists.length) {
+    listId = lists[0].id
+  } else {
+    const created = await api.post('/shopping-lists', { name: 'Minha Lista' })
+    listId = created.data?.shoppingList?.id
+  }
+  if (listId) sessionStorage.setItem('active_list_id', String(listId))
+  return listId
+}
+
+// --- SACOLA ---
+export async function getCartItems() {
   try {
-    return JSON.parse(localStorage.getItem(chave) || '[]')
+    const cartId = await ensureCartId()
+    if (!cartId) return []
+    const res = await api.get(`/cart/${cartId}`)
+    return res.data?.cart?.items || []
   } catch {
+    sessionStorage.removeItem('active_cart_id')
     return []
   }
 }
 
-function salvarLista(chave, evento, itens) {
-  localStorage.setItem(chave, JSON.stringify(itens))
-  window.dispatchEvent(new Event(evento))
-  return itens
-}
-
-// --- SACOLA ---
-export function getCartItems() {
-  return lerLista(CART_KEY)
-}
-
-export function addToCart(product, quantidade = 1) {
-  const itens = lerLista(CART_KEY)
-  const existente = itens.find((item) => item.product_id === product.id)
-
-  if (existente) {
-    existente.quantity += quantidade
-  } else {
-    itens.push({
-      id: product.id,
-      product_id: product.id,
-      quantity: quantidade,
-      unit_price: Number(product.price || 0),
-      product,
-    })
+export async function addToCart(product, quantidade = 1) {
+  const cartId = await ensureCartId()
+  try {
+    await api.post(`/cart/${cartId}/items`, { product_id: product.id, quantity: quantidade })
+  } catch (err) {
+    if (err.response?.status === 422) {
+      const msg =
+        err.response?.data?.errors?.allergen?.[0] ||
+        err.response?.data?.message ||
+        'Este produto possui alérgenos incompatíveis com o seu perfil.'
+      if (!window.confirm(`${msg}\n\nDeseja adicionar mesmo assim?`)) return false
+      await api.post(`/cart/${cartId}/items`, { product_id: product.id, quantity: quantidade, ignore_allergens: true })
+    } else {
+      throw err
+    }
   }
-  return salvarLista(CART_KEY, 'cart-updated', itens)
+  window.dispatchEvent(new Event('cart-updated'))
+  return true
 }
 
-export function updateCartQuantity(productId, novaQtd) {
-  let itens = lerLista(CART_KEY)
-  if (novaQtd <= 0) {
-    itens = itens.filter((i) => i.product_id !== productId)
-  } else {
-    const item = itens.find((i) => i.product_id === productId)
-    if (item) item.quantity = novaQtd
-  }
-  return salvarLista(CART_KEY, 'cart-updated', itens)
+export async function updateCartQuantity(cartItemId, novaQtd) {
+  const cartId = await ensureCartId()
+  await api.put(`/cart/${cartId}/items/${cartItemId}`, { quantity: novaQtd })
+  window.dispatchEvent(new Event('cart-updated'))
+  return getCartItems()
 }
 
-export function removeCartItem(productId) {
-  const itens = lerLista(CART_KEY).filter((i) => i.product_id !== productId)
-  return salvarLista(CART_KEY, 'cart-updated', itens)
+export async function removeCartItem(cartItemId) {
+  const cartId = await ensureCartId()
+  await api.delete(`/cart/${cartId}/items/${cartItemId}`)
+  window.dispatchEvent(new Event('cart-updated'))
+  return getCartItems()
 }
 
-export function clearCart() {
-  return salvarLista(CART_KEY, 'cart-updated', [])
+export async function checkoutCart() {
+  const cartId = await ensureCartId()
+  const res = await api.post(`/cart/${cartId}/checkout`)
+  sessionStorage.removeItem('active_cart_id')
+  window.dispatchEvent(new Event('cart-updated'))
+  return res.data
 }
 
 // --- LISTA DE COMPRAS ---
-export function getListItems() {
-  return lerLista(LIST_KEY)
-}
-
-export function addToList(product, quantidade = 1) {
-  const itens = lerLista(LIST_KEY)
-  const existente = itens.find((item) => item.product_id === product.id)
-
-  if (existente) {
-    existente.quantity += quantidade
-  } else {
-    itens.push({
-      id: product.id,
-      product_id: product.id,
-      quantity: quantidade,
-      is_checked: false,
-      product,
-    })
+export async function getListItems() {
+  try {
+    const listId = await ensureListId()
+    if (!listId) return []
+    const res = await api.get(`/shopping-lists/${listId}`)
+    return res.data?.shoppingList?.items || []
+  } catch {
+    sessionStorage.removeItem('active_list_id')
+    return []
   }
-  return salvarLista(LIST_KEY, 'list-updated', itens)
 }
 
-export function toggleListItem(productId) {
-  const itens = lerLista(LIST_KEY)
-  const item = itens.find((i) => i.product_id === productId)
-  if (item) item.is_checked = !item.is_checked
-  return salvarLista(LIST_KEY, 'list-updated', itens)
+export async function addToList(product, quantidade = 1) {
+  const listId = await ensureListId()
+  await api.post(`/shopping-lists/${listId}/items`, { product_id: product.id, quantity: quantidade })
+  window.dispatchEvent(new Event('list-updated'))
+  return getListItems()
 }
 
-export function updateListQuantity(productId, novaQtd) {
-  let itens = lerLista(LIST_KEY)
-  if (novaQtd <= 0) {
-    itens = itens.filter((i) => i.product_id !== productId)
-  } else {
-    const item = itens.find((i) => i.product_id === productId)
-    if (item) item.quantity = novaQtd
+export async function toggleListItem(item) {
+  const listId = await ensureListId()
+  await api.put(`/shopping-lists/${listId}/items/${item.id}`, { is_checked: !item.is_checked })
+  window.dispatchEvent(new Event('list-updated'))
+  return getListItems()
+}
+
+export async function updateListQuantity(item, novaQtd) {
+  if (novaQtd <= 0) return removeListItem(item.id)
+  const listId = await ensureListId()
+  await api.put(`/shopping-lists/${listId}/items/${item.id}`, { quantity: novaQtd })
+  window.dispatchEvent(new Event('list-updated'))
+  return getListItems()
+}
+
+export async function removeListItem(itemId) {
+  const listId = await ensureListId()
+  await api.delete(`/shopping-lists/${listId}/items/${itemId}`)
+  window.dispatchEvent(new Event('list-updated'))
+  return getListItems()
+}
+
+export async function importListToCart() {
+  const listId = await ensureListId()
+  const res = await api.post(`/shopping-lists/${listId}/start-cart`)
+  if (res.data?.cart?.id) {
+    sessionStorage.setItem('active_cart_id', String(res.data.cart.id))
   }
-  return salvarLista(LIST_KEY, 'list-updated', itens)
-}
-
-export function removeListItem(productId) {
-  const itens = lerLista(LIST_KEY).filter((i) => i.product_id !== productId)
-  return salvarLista(LIST_KEY, 'list-updated', itens)
-}
-
-export function importListToCart() {
-  const lista = lerLista(LIST_KEY)
-  const restantes = []
-  let enviados = 0
-
-  for (const item of lista) {
-    if (item.is_checked && item.product) {
-      addToCart(item.product, item.quantity)
-      enviados++
-    } else {
-      restantes.push(item)
-    }
-  }
-
-  salvarLista(LIST_KEY, 'list-updated', restantes)
-  return enviados
+  window.dispatchEvent(new Event('cart-updated'))
+  window.dispatchEvent(new Event('list-updated'))
+  return res.data?.cart?.items?.length || 0
 }

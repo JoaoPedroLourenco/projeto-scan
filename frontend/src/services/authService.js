@@ -46,5 +46,10 @@ export async function logout() {
     currentUserCache = null
     sessionStorage.removeItem('token')
     sessionStorage.removeItem('user_role')
+    sessionStorage.removeItem('active_cart_id')
+    sessionStorage.removeItem('active_list_id')
+    localStorage.removeItem('beepo-profile-restrictions')
+    localStorage.removeItem('beepo_consumer_cart')
+    localStorage.removeItem('beepo_consumer_shopping_list')
   }
 }

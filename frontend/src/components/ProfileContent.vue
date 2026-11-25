@@ -27,8 +27,8 @@ async function loadProfile() {
   try {
     profile.value = await getCurrentUser()
     catalogAllergens.value = await getAllergens().catch(() => [])
-    if (!restrictions.value.length && Array.isArray(profile.value?.allergens)) {
-      restrictions.value = profile.value.allergens.map((a) => a.name)
+    if (Array.isArray(profile.value?.allergens)) {
+      restrictions.value = profile.value.allergens.map((a) => a.name).filter(Boolean)
     }
   } catch (err) {
     errorMessage.value = err.response?.data?.message || 'Não foi possível carregar os dados da conta.'

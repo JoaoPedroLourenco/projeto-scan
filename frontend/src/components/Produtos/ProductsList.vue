@@ -2,7 +2,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { Plus } from '@lucide/vue'
-import { deleteProduct, getProductStockMap, removeProductStock, showAllProducts } from '../../services/productService.js'
+import { deleteProduct, getProductStockMap, getStockBatches, removeProductStock, showAllProducts } from '../../services/productService.js'
 import ProductsTable from './ProductsTable.vue'
 import PageContainer from '../ui/PageContainer.vue'
 
@@ -31,10 +31,24 @@ async function loadProducts() {
   try {
     const res = await showAllProducts()
     const list = Array.isArray(res.data) ? res.data : res.data?.data ?? []
-    const stockMap = getProductStockMap()
+    const stockMap = { ...getProductStockMap() }
+    try {
+      const batches = await getStockBatches()
+      for (const b of batches) {
+        if (b?.product_id) {
+          stockMap[String(b.product_id)] = {
+            stock_quantity: (stockMap[String(b.product_id)]?.stock_quantity || 0) + Number(b.quantity || 0),
+            batch_code: b.batch_code || '',
+            expiration_date: b.expiration_date || '',
+          }
+        }
+      }
+    } catch {
+      /* mantém dados locais se /stock não estiver disponível */
+    }
     products.value = list.map((p) => ({ ...stockMap[String(p.id)], ...p }))
   } catch (err) {
-    error.value = err.response?.data?.message || 'Não foi possível carregar os produtos.'
+    error.value = err.response?.data?.msg || err.response?.data?.message || 'Não foi possível carregar os produtos.'
   } finally {
     loading.value = false
   }
@@ -44,6 +58,7 @@ watch(search, () => (page.value = 1))
 
 async function handleDelete(product) {
   if (!product?.id) return
+  if (!window.confirm(`Tem certeza que deseja excluir o produto "${product.name}"?`)) return
   try {
     await deleteProduct(product.id)
     products.value = products.value.filter((p) => p.id !== product.id)

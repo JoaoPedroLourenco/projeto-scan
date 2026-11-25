@@ -57,7 +57,7 @@ async function loadProduct() {
     form.expiration = estoque.expiration_date ?? ''
     form.is_active = prod.is_active
   } catch (err) {
-    error.value = err.response?.data?.message || 'Não foi possível carregar o produto.'
+    error.value = err.response?.data?.msg || err.response?.data?.message || 'Não foi possível carregar o produto.'
   } finally {
     loading.value = false
   }
@@ -92,7 +92,12 @@ async function saveProduct() {
 
     router.push('/produtos')
   } catch (err) {
-    error.value = err.response?.data?.message || 'Não foi possível salvar o produto.'
+    const backendErrors = err.response?.data?.errors
+    error.value =
+      (backendErrors && Object.values(backendErrors).flat()[0]) ||
+      err.response?.data?.msg ||
+      err.response?.data?.message ||
+      'Não foi possível salvar o produto.'
   } finally {
     saving.value = false
   }

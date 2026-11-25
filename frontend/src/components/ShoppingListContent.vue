@@ -20,38 +20,45 @@ async function loadProducts() {
   try {
     const res = await showAllProducts()
     const list = res.data ?? res
-    products.value = Array.isArray(list) ? list : []
+    products.value = Array.isArray(list) ? list : list?.data ?? []
   } catch (err) {
     console.error('Erro ao carregar produtos:', err)
   }
 }
 
-function addItem() {
+async function loadList() {
+  items.value = await getListItems()
+}
+
+async function addItem() {
   if (adding.value) return
   const prod = products.value.find((p) => String(p.id) === String(selectedProductId.value))
   if (!prod) return
   adding.value = true
-  items.value = addToList(prod, 1)
-  selectedProductId.value = ''
-  showForm.value = false
-  adding.value = false
+  try {
+    items.value = await addToList(prod, 1)
+    selectedProductId.value = ''
+    showForm.value = false
+  } finally {
+    adding.value = false
+  }
 }
 
-function sendToCart() {
-  const enviados = importListToCart()
+async function sendToCart() {
+  const enviados = await importListToCart()
+  await loadList()
   if (enviados > 0) {
-    items.value = getListItems()
     listNotice.value = `${enviados} ${enviados === 1 ? 'item enviado' : 'itens enviados'} para a sua Sacola.`
   } else {
-    listNotice.value = 'Marque pelo menos um item da lista para enviar para a Sacola.'
+    listNotice.value = 'Lista importada para a sua Sacola.'
   }
   setTimeout(() => (listNotice.value = ''), 3500)
 }
 
 onMounted(() => {
-  items.value = getListItems()
+  loadList()
   loadProducts()
-  window.addEventListener('list-updated', () => (items.value = getListItems()))
+  window.addEventListener('list-updated', loadList)
 })
 </script>
 
@@ -101,8 +108,8 @@ onMounted(() => {
       <p v-if="!items.length" class="px-5 py-14 text-center text-sm text-slate-500">
         Sua lista está vazia. Use o botão + para adicionar produtos do catálogo.
       </p>
-      <article v-for="item in items" :key="item.product_id" class="flex items-center gap-3 border-b border-slate-100 px-4 py-3.5 last:border-0 sm:px-5">
-        <button type="button" :aria-label="item.is_checked ? 'Marcar como pendente' : 'Marcar como comprado'" class="flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition" :class="item.is_checked ? 'border-blue-600 bg-blue-600 text-white' : 'border-slate-300 text-transparent'" @click="items = toggleListItem(item.product_id)">
+      <article v-for="item in items" :key="item.id" class="flex items-center gap-3 border-b border-slate-100 px-4 py-3.5 last:border-0 sm:px-5">
+        <button type="button" :aria-label="item.is_checked ? 'Marcar como pendente' : 'Marcar como comprado'" class="flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition" :class="item.is_checked ? 'border-blue-600 bg-blue-600 text-white' : 'border-slate-300 text-transparent'" @click="toggleListItem(item)">
           <Check :size="13" />
         </button>
         <div class="min-w-0 flex-1">
@@ -110,11 +117,11 @@ onMounted(() => {
           <span class="mt-0.5 block text-[10px] text-slate-400">{{ item.product?.category?.name || 'Geral' }}</span>
         </div>
         <div class="flex items-center rounded-lg border border-slate-200">
-          <button type="button" class="p-2 text-slate-500 hover:text-blue-600" aria-label="Diminuir quantidade" @click="items = updateListQuantity(item.product_id, item.quantity - 1)"><Minus :size="12" /></button>
+          <button type="button" class="p-2 text-slate-500 hover:text-blue-600" aria-label="Diminuir quantidade" @click="updateListQuantity(item, item.quantity - 1)"><Minus :size="12" /></button>
           <span class="min-w-7 text-center text-[11px] font-medium">{{ item.quantity }}</span>
-          <button type="button" class="p-2 text-slate-500 hover:text-blue-600" aria-label="Aumentar quantidade" @click="items = updateListQuantity(item.product_id, item.quantity + 1)"><Plus :size="12" /></button>
+          <button type="button" class="p-2 text-slate-500 hover:text-blue-600" aria-label="Aumentar quantidade" @click="updateListQuantity(item, item.quantity + 1)"><Plus :size="12" /></button>
         </div>
-        <button type="button" class="p-2 text-slate-400 hover:text-rose-600" aria-label="Remover item" @click="items = removeListItem(item.product_id)"><Trash2 :size="14" /></button>
+        <button type="button" class="p-2 text-slate-400 hover:text-rose-600" aria-label="Remover item" @click="removeListItem(item.id)"><Trash2 :size="14" /></button>
       </article>
     </section>
   </PageContainer>

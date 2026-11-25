@@ -37,6 +37,16 @@ export async function deleteProduct(productId) {
   return response.data
 }
 
+export async function getStockBatches() {
+  const response = await api.get('/stock')
+  return response.data?.data ?? response.data ?? []
+}
+
+export async function registerStockEntry(entryData) {
+  const response = await api.post('/stock/entry', entryData)
+  return response.data
+}
+
 // Salva estoque, lote e validade no navegador (localStorage)
 const STOCK_KEY = 'beepo_product_stock'
 
