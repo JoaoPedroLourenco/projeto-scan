@@ -33,8 +33,10 @@ export async function getAllergens() {
   return response.data.allergens ?? response.data.data ?? response.data ?? []
 }
 
-export function syncUserAllergens(allergenIds) {
-  return api.put('/auth/me/allergens', { allergen_ids: allergenIds })
+export async function syncUserAllergens(allergenIds) {
+  const response = await api.put('/auth/me/allergens', { allergen_ids: allergenIds })
+  currentUserCache = null
+  return response
 }
 
 export async function logout() {

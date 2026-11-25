@@ -63,7 +63,9 @@ async function registerProduct() {
   error.value = ''
 
   try {
-    const idsAlergenos = allergens.value.map((a) => (typeof a === 'object' ? a.id : Number(a)))
+    const idsAlergenos = allergens.value
+      .map((a) => (typeof a === 'object' ? a.id : Number(a)))
+      .filter((id) => Number.isFinite(id) && id > 0)
     const res = await createProducts({
       category_id: Number(form.category_id),
       name: form.name,
