@@ -1,11 +1,10 @@
 <script setup>
-import { Box, Plus } from '@lucide/vue'
+import { Plus } from '@lucide/vue'
 import BaseButton from '../ui/BaseButton.vue'
+import { formatCurrency } from '../../utils/masks.js'
 
 defineProps({ product: { type: Object, required: true } })
 const emit = defineEmits(['add'])
-const currency = (value) =>
-  Number(value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 </script>
 
 <template>
@@ -20,7 +19,7 @@ const currency = (value) =>
         :src="product.image_url || product.image"
         :alt="product.name"
         class="h-full w-full object-contain p-3"
-      /><Box v-else :size="40" :stroke-width="1.4" class="text-slate-300" />
+      />
     </div>
     <div class="flex flex-1 flex-col px-1 pt-3">
       <span class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">{{
@@ -37,7 +36,7 @@ const currency = (value) =>
       </p>
       <div class="mt-auto flex items-end justify-between gap-3 pt-3">
         <strong class="text-base font-bold text-slate-900"
-          >{{ currency(product.price) }}
+          >{{ formatCurrency(product.price) }}
           <span class="text-[11px] font-normal text-slate-500">{{
             product.unit || '/un'
           }}</span></strong

@@ -6,18 +6,21 @@ import { useProduct } from '../../composables/useProduct'
 const { definirProduto } = useProduct()
 
 const barcode = ref('')
-const produto = ref(null)
+const loading = ref(false)
+const notFoundMessage = ref('')
 
 async function lookupByBarcode() {
+  if (!barcode.value.trim() || loading.value) return
+  loading.value = true
+  notFoundMessage.value = ''
   try {
-    const response = await lookupBarCode(barcode.value)
-
-    produto.value = response.data
-
-    console.log(response.data)
+    const response = await lookupBarCode(barcode.value.trim())
     definirProduto(response.data)
   } catch (error) {
-    console.error(error.response.data)
+    console.error('Erro ao buscar produto:', error.response?.data ?? error.message)
+    notFoundMessage.value = error.response?.data?.message || 'Código de barras não encontrado.'
+  } finally {
+    loading.value = false
   }
 }
 </script>
@@ -35,11 +38,14 @@ async function lookupByBarcode() {
       />
       <button
         type="submit"
-        class="rounded-lg bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white hover:bg-blue-700"
+        :disabled="loading"
+        class="shrink-0 rounded-lg bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
       >
-        Buscar
+        {{ loading ? 'Buscando...' : 'Buscar' }}
       </button>
     </form>
-    <p v-if="produto" class="px-2 text-[11px] text-emerald-700">{{ produto.name }}</p>
+    <p v-if="notFoundMessage" class="px-2 pt-1 text-[11px] text-rose-600">
+      {{ notFoundMessage }}
+    </p>
   </div>
 </template>
